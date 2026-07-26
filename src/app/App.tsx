@@ -98,14 +98,20 @@ function SpiralRings() {
       style={{ left: 0, transform: "translateX(-50%)", zIndex: 20 }}
     >
       {Array.from({ length: RING_COUNT }).map((_, i) => (
-        <div key={i} className="relative flex-shrink-0 rounded-full" style={{
-          width: 26,
-          height: 26,
-          background: "conic-gradient(from 210deg, #f5f5f7, #b6b6be 22%, #6b6b73 46%, #b6b6be 68%, #f5f5f7 88%, #f5f5f7)",
-          WebkitMask: "radial-gradient(closest-side, transparent 59%, black 61%)",
-          mask: "radial-gradient(closest-side, transparent 59%, black 61%)",
-          boxShadow: "1px 2px 2.5px rgba(0,0,0,0.3)",
-        }}>
+        <div key={i} className="relative flex-shrink-0" style={{ width: 26, height: 26 }}>
+          {/* the wire loop itself */}
+          <div className="absolute inset-0 rounded-full" style={{
+            border: "4px solid #8C8C96",
+            boxShadow: "1px 2px 2px rgba(0,0,0,0.3)",
+          }} />
+          {/* highlight sheen so the wire reads as round metal, not a flat ring */}
+          <div className="absolute rounded-full" style={{
+            top: 2, left: 2, width: 12, height: 12,
+            borderTop: "2px solid rgba(255,255,255,0.9)",
+            borderLeft: "2px solid rgba(255,255,255,0.9)",
+            borderRight: "2px solid transparent",
+            borderBottom: "2px solid transparent",
+          }} />
           {/* rivet / hole where the wire crosses into the paper */}
           <div className="absolute rounded-full" style={{
             width: 5.5, height: 5.5, left: 5, top: "50%", transform: "translateY(-50%)",
