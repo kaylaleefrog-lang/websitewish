@@ -95,16 +95,29 @@ function SpiralRings() {
   return (
     <div
       className="absolute left-0 right-0 flex justify-around px-6 md:px-10 pointer-events-none"
-      style={{ top: 0, transform: "translateY(-50%)", zIndex: 20 }}
+      style={{ top: 0, transform: "translateY(-58%)", zIndex: 20 }}
     >
       {Array.from({ length: RING_COUNT }).map((_, i) => (
-        <div key={i} className="rounded-full flex-shrink-0" style={{
-          width: 22,
-          height: 22,
-          border: "4px solid #C8C8D0",
-          background: "linear-gradient(160deg, rgba(255,255,255,0.9), rgba(180,180,190,0.4))",
-          boxShadow: "0 3px 4px rgba(0,0,0,0.22), inset 0 1px 1px rgba(255,255,255,0.6)",
-        }} />
+        <div key={i} className="relative flex-shrink-0" style={{ width: 22, height: 26 }}>
+          {/* punched hole in the paper, where the wire threads through */}
+          <div className="absolute rounded-full" style={{
+            width: 9, height: 9, left: "50%", bottom: -1, transform: "translateX(-50%)",
+            background: "radial-gradient(circle at 35% 35%, #7a7a82, #26262c)",
+            boxShadow: "inset 0 1px 2px rgba(0,0,0,0.6)",
+          }} />
+          {/* silver spiral wire loop, open where it dips into the hole */}
+          <svg
+            width="22" height="22" viewBox="0 0 22 22"
+            className="absolute top-0 left-0"
+            style={{
+              transform: `rotate(${i % 2 === 0 ? -14 : 14}deg)`,
+              filter: "drop-shadow(0 2px 1.5px rgba(0,0,0,0.3))",
+            }}
+          >
+            <path d="M 7.6 18.3 A 8 8 0 1 1 14.4 18.3" fill="none" stroke="#8E8E98" strokeWidth="3.6" strokeLinecap="round" />
+            <path d="M 7.6 18.3 A 8 8 0 1 1 14.4 18.3" fill="none" stroke="#E8E8EE" strokeWidth="1.6" strokeLinecap="round" />
+          </svg>
+        </div>
       ))}
     </div>
   );
