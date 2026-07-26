@@ -89,16 +89,16 @@ function fmt(n: number) { return "$" + n.toFixed(2); }
 // ─── Polka dot background ─────────────────────────────────────────────────────
 const polkaDotBg = `url("data:image/svg+xml,%3Csvg width='48' height='48' viewBox='0 0 48 48' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='24' cy='24' r='5.5' fill='%2342FAE1' fill-opacity='0.35'/%3E%3C/svg%3E")`;
 
-// ─── Spiral notebook rings ────────────────────────────────────────────────────
-const RING_COUNT = 14;
+// ─── Spiral notebook rings (left edge, like a real spiral-bound notebook) ─────
+const RING_COUNT = 12;
 function SpiralRings() {
   return (
     <div
-      className="absolute left-0 right-0 flex justify-around px-6 md:px-10 pointer-events-none"
-      style={{ top: 0, transform: "translateY(-58%)", zIndex: 20 }}
+      className="absolute top-0 bottom-0 flex flex-col justify-around py-8 md:py-12 pointer-events-none"
+      style={{ left: 0, transform: "translateX(-58%)", zIndex: 20 }}
     >
       {Array.from({ length: RING_COUNT }).map((_, i) => (
-        <div key={i} className="relative flex-shrink-0" style={{ width: 22, height: 26 }}>
+        <div key={i} className="relative flex-shrink-0" style={{ width: 22, height: 26, transform: "rotate(90deg)" }}>
           {/* punched hole in the paper, where the wire threads through */}
           <div className="absolute rounded-full" style={{
             width: 9, height: 9, left: "50%", bottom: -1, transform: "translateX(-50%)",
@@ -423,11 +423,11 @@ export default function App() {
     <div className="min-h-screen flex items-center justify-center p-4 md:p-8" style={{ background: "#FFFFFF", backgroundImage: polkaDotBg }}>
 
       {/* Notebook */}
-      <div className="relative w-full max-w-5xl pt-3">
+      <div className="relative w-full max-w-5xl pl-3">
         <SpiralRings />
 
         {/* Notebook cover / main card */}
-        <div className="rounded-b-[2rem] rounded-t-xl overflow-hidden shadow-2xl flex flex-col" style={{ background: "#FFE8F5", minHeight: "580px", maxHeight: "90vh", border: "3px solid #fff", borderTop: "10px solid #FFB6D9" }}>
+        <div className="rounded-r-[2rem] rounded-l-xl overflow-hidden shadow-2xl flex flex-col" style={{ background: "#FFE8F5", minHeight: "580px", maxHeight: "90vh", border: "3px solid #fff", borderLeft: "10px solid #FFB6D9" }}>
 
         {/* Top bar */}
         <div className="flex items-center justify-between px-6 py-4 flex-shrink-0" style={{ background: "#fff" }}>
