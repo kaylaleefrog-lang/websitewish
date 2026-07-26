@@ -90,33 +90,27 @@ function fmt(n: number) { return "$" + n.toFixed(2); }
 const polkaDotBg = `url("data:image/svg+xml,%3Csvg width='48' height='48' viewBox='0 0 48 48' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='24' cy='24' r='5.5' fill='%2342FAE1' fill-opacity='0.35'/%3E%3C/svg%3E")`;
 
 // ─── Spiral notebook rings (left edge, like a real spiral-bound notebook) ─────
-const RING_COUNT = 12;
+const RING_COUNT = 16;
 function SpiralRings() {
   return (
     <div
-      className="absolute top-0 bottom-0 flex flex-col justify-around py-8 md:py-12 pointer-events-none"
-      style={{ left: 0, transform: "translateX(-58%)", zIndex: 20 }}
+      className="absolute top-0 bottom-0 flex flex-col justify-around py-6 md:py-8 pointer-events-none"
+      style={{ left: 0, transform: "translateX(-50%)", zIndex: 20 }}
     >
       {Array.from({ length: RING_COUNT }).map((_, i) => (
-        <div key={i} className="relative flex-shrink-0" style={{ width: 22, height: 26, transform: "rotate(90deg)" }}>
-          {/* punched hole in the paper, where the wire threads through */}
+        <div key={i} className="relative flex-shrink-0 rounded-full" style={{
+          width: 26,
+          height: 26,
+          background: "conic-gradient(from 210deg, #f5f5f7, #b6b6be 22%, #6b6b73 46%, #b6b6be 68%, #f5f5f7 88%, #f5f5f7)",
+          WebkitMask: "radial-gradient(closest-side, transparent 59%, black 61%)",
+          mask: "radial-gradient(closest-side, transparent 59%, black 61%)",
+          boxShadow: "1px 2px 2.5px rgba(0,0,0,0.3)",
+        }}>
+          {/* rivet / hole where the wire crosses into the paper */}
           <div className="absolute rounded-full" style={{
-            width: 9, height: 9, left: "50%", bottom: -1, transform: "translateX(-50%)",
-            background: "radial-gradient(circle at 35% 35%, #7a7a82, #26262c)",
-            boxShadow: "inset 0 1px 2px rgba(0,0,0,0.6)",
+            width: 5.5, height: 5.5, left: 5, top: "50%", transform: "translateY(-50%)",
+            background: "#2b2b31",
           }} />
-          {/* silver spiral wire loop, open where it dips into the hole */}
-          <svg
-            width="22" height="22" viewBox="0 0 22 22"
-            className="absolute top-0 left-0"
-            style={{
-              transform: `rotate(${i % 2 === 0 ? -14 : 14}deg)`,
-              filter: "drop-shadow(0 2px 1.5px rgba(0,0,0,0.3))",
-            }}
-          >
-            <path d="M 7.6 18.3 A 8 8 0 1 1 14.4 18.3" fill="none" stroke="#8E8E98" strokeWidth="3.6" strokeLinecap="round" />
-            <path d="M 7.6 18.3 A 8 8 0 1 1 14.4 18.3" fill="none" stroke="#E8E8EE" strokeWidth="1.6" strokeLinecap="round" />
-          </svg>
         </div>
       ))}
     </div>
