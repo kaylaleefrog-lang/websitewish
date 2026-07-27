@@ -417,7 +417,7 @@ export default function App() {
       <div className="w-full max-w-[1100px] rounded-[2rem] overflow-hidden shadow-2xl flex flex-col" style={{ background: "#FFE8F5", height: "85vh", border: "3px solid #fff" }}>
 
         {/* Top bar */}
-        <div className={`flex items-center px-6 py-4 flex-shrink-0 ${lists.length === 0 ? "justify-center" : "justify-between"}`} style={{ background: "#fff" }}>
+        <div className="flex items-center justify-between px-6 py-2.5 flex-shrink-0" style={{ background: "#fff" }}>
           <div className="flex items-center gap-2">
             <img src={heartsLogo} alt="" width={28} className="select-none" draggable={false} />
             <span className="text-2xl font-semibold" style={{ fontFamily: "'Angelica', cursive", color: "#FF1493", letterSpacing: "0.02em" }}>Wishly</span>
@@ -445,7 +445,7 @@ export default function App() {
         {/* Body */}
         {lists.length === 0 ? (
           /* Welcome screen — shown until the first wishlist is created */
-          <div className="flex-1 flex items-center justify-center p-8">
+          <div className="flex-1 flex items-start justify-center p-8 pt-16">
             <div className="text-center max-w-sm">
               <div className="flex justify-center mb-5">
                 <img src={heartsLogo} alt="" width={230} className="select-none" draggable={false} />
