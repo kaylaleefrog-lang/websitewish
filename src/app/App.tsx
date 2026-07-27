@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
   Plus, X, Share2, Bell, Heart, ExternalLink, Tag, Check,
-  Copy, Trash2, Edit3, AlertCircle, Sparkles,
+  Copy, Trash2, Edit3, AlertCircle, Sparkles, ImageOff,
   Gift, Home, Star, Shirt, BookOpen, Leaf, Palette, ShoppingBag, Search
 } from "lucide-react";
 import heartsLogo from "../assets/images/hearts-logo.png";
@@ -42,20 +42,24 @@ interface Notification {
   read: boolean;
 }
 
-// ─── Mock scraper ──────────────────────────────────────────────────────────────
-function simulateScrape(url: string): Omit<WishlistItem, "id" | "addedAt" | "notifyOnSale" | "selectedImage"> {
-  const domain = (() => { try { return new URL(url).hostname.replace("www.", ""); } catch { return "shop.example.com"; } })();
-  const mocks: Record<string, Omit<WishlistItem, "id" | "addedAt" | "notifyOnSale" | "selectedImage">> = {
-    "amazon.com": { url, title: "Artisan Leather Tote Bag — Saddle Brown", description: "Full-grain vegetable-tanned leather, hand-stitched gusset, brass hardware.", availableImages: ["https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&h=600&fit=crop&auto=format","https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&h=600&fit=crop&auto=format","https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&h=600&fit=crop&auto=format","https://images.unsplash.com/photo-1575844611132-ab49e4218ead?w=600&h=600&fit=crop&auto=format"], price: 189.99, originalPrice: 189.99, onSale: false, salePercent: null, store: "Amazon" },
-    "etsy.com": { url, title: "Hand-thrown Ceramic Mug — Speckled Sage", description: "Wheel-thrown stoneware, food-safe glaze, 12 oz. Made in Portland, OR.", availableImages: ["https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=600&h=600&fit=crop&auto=format","https://images.unsplash.com/photo-1577937927133-66ef06acdf18?w=600&h=600&fit=crop&auto=format","https://images.unsplash.com/photo-1571019613914-85f342c6a11e?w=600&h=600&fit=crop&auto=format","https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=600&fit=crop&auto=format"], price: 34.00, originalPrice: 34.00, onSale: false, salePercent: null, store: "Etsy" },
-    "nordstrom.com": { url, title: "Merino Wool Crewneck Sweater — Oatmeal", description: "100% extra-fine merino, relaxed fit, dropped shoulders.", availableImages: ["https://images.unsplash.com/photo-1516826957135-700dedea698c?w=600&h=600&fit=crop&auto=format","https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=600&h=600&fit=crop&auto=format","https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=600&h=600&fit=crop&auto=format","https://images.unsplash.com/photo-1611312449408-fcece27cdbb7?w=600&h=600&fit=crop&auto=format"], price: 78.00, originalPrice: 130.00, onSale: true, salePercent: 40, store: "Nordstrom" },
-    "urbanoutfitters.com": { url, title: "Linen Throw Pillow Cover — Natural", description: "Stonewashed 100% European linen, invisible zipper, 18x18.", availableImages: ["https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&h=600&fit=crop&auto=format","https://images.unsplash.com/photo-1540638349517-3abd5afc5847?w=600&h=600&fit=crop&auto=format","https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&h=600&fit=crop&auto=format","https://images.unsplash.com/photo-1567016432779-094069958ea5?w=600&h=600&fit=crop&auto=format"], price: 29.00, originalPrice: 29.00, onSale: false, salePercent: null, store: "Urban Outfitters" },
+// ─── Real product scraper ──────────────────────────────────────────────────────
+// Hits our own /api/scrape serverless function, which fetches the page
+// server-side (avoiding CORS) and parses JSON-LD/Open Graph product data.
+async function scrapeProduct(url: string): Promise<Omit<WishlistItem, "id" | "addedAt" | "notifyOnSale" | "selectedImage">> {
+  const res = await fetch(`/api/scrape?url=${encodeURIComponent(url)}`);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data?.error || "Couldn't fetch that link");
+  return {
+    url,
+    title: data.title,
+    description: data.description,
+    availableImages: data.availableImages ?? [],
+    price: data.price,
+    originalPrice: data.originalPrice,
+    onSale: !!data.onSale,
+    salePercent: data.salePercent,
+    store: data.store,
   };
-  if (mocks[domain]) return mocks[domain];
-  const price = Math.round((Math.random() * 200 + 20) * 100) / 100;
-  const onSale = Math.random() > 0.6;
-  const salePercent = onSale ? Math.round(Math.random() * 40 + 10) : null;
-  return { url, title: `Product from ${domain}`, description: "A gorgeous find! Choose a photo below to personalize how it looks in your list.", availableImages: ["https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&h=600&fit=crop&auto=format","https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=600&h=600&fit=crop&auto=format","https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=600&h=600&fit=crop&auto=format","https://images.unsplash.com/photo-1484704849700-f032a568e944?w=600&h=600&fit=crop&auto=format"], price: onSale ? Math.round(price * (1 - (salePercent! / 100)) * 100) / 100 : price, originalPrice: price, onSale, salePercent, store: domain };
 }
 
 // ─── Seed data ────────────────────────────────────────────────────────────────
@@ -106,8 +110,12 @@ function ItemCard({ item, onDelete, onChangePhoto, onClick, isSelected }: {
           boxShadow: isSelected ? "0 0 0 4px #FF149322" : "0 2px 10px rgba(255,20,147,0.08)",
         }}
       >
-        <div className="relative aspect-square bg-pink-50 overflow-hidden">
-          <img src={item.selectedImage} alt={item.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+        <div className="relative aspect-square bg-pink-50 overflow-hidden flex items-center justify-center">
+          {item.selectedImage ? (
+            <img src={item.selectedImage} alt={item.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+          ) : (
+            <ImageOff size={28} color="#FFB6D9" />
+          )}
           {item.onSale && (
             <div className="absolute top-2 left-2"><SaleBadge pct={item.salePercent!} /></div>
           )}
@@ -172,11 +180,22 @@ function AddItemModal({ onClose, onAdd }: { onClose: () => void; onAdd: (item: W
   const [scraped, setScraped] = useState<Omit<WishlistItem, "id" | "addedAt" | "notifyOnSale" | "selectedImage"> | null>(null);
   const [selectedImg, setSelectedImg] = useState<string>("");
   const [notifyOnSale, setNotifyOnSale] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  function handleFetch() {
-    if (!url.trim()) return;
+  async function handleFetch() {
+    if (!url.trim() || loading) return;
     setLoading(true);
-    setTimeout(() => { const data = simulateScrape(url.trim()); setScraped(data); setSelectedImg(data.availableImages[0]); setStep("pick"); setLoading(false); }, 1200);
+    setError(null);
+    try {
+      const data = await scrapeProduct(url.trim());
+      setScraped(data);
+      setSelectedImg(data.availableImages[0] ?? "");
+      setStep("pick");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Couldn't fetch that link");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -205,8 +224,13 @@ function AddItemModal({ onClose, onAdd }: { onClose: () => void; onAdd: (item: W
                 autoFocus
               />
               <p className="text-xs" style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#C0A0B0" }}>
-                Try: amazon.com, etsy.com, nordstrom.com, urbanoutfitters.com
+                We'll pull the real title, photo, and price from the page.
               </p>
+              {error && (
+                <div className="flex items-center gap-2 rounded-2xl p-3 text-xs font-bold" style={{ background: "#FFEAF0", color: "#D6003F", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
+                  <AlertCircle size={14} />{error}
+                </div>
+              )}
               <button
                 onClick={handleFetch} disabled={!url.trim() || loading}
                 className="w-full rounded-2xl py-3 text-sm font-bold flex items-center justify-center gap-2 transition-opacity disabled:opacity-40"
@@ -218,16 +242,24 @@ function AddItemModal({ onClose, onAdd }: { onClose: () => void; onAdd: (item: W
           ) : scraped ? (
             <div className="space-y-4">
               <div className="flex gap-3 p-3 rounded-2xl" style={{ background: "#FFF5FD" }}>
-                <img src={selectedImg} alt={scraped.title} className="w-16 h-16 object-cover rounded-xl flex-shrink-0" style={{ border: "2px solid #FFD6F0" }} />
+                {selectedImg ? (
+                  <img src={selectedImg} alt={scraped.title} className="w-16 h-16 object-cover rounded-xl flex-shrink-0" style={{ border: "2px solid #FFD6F0" }} />
+                ) : (
+                  <div className="w-16 h-16 rounded-xl flex-shrink-0 flex items-center justify-center" style={{ border: "2px solid #FFD6F0", background: "#fff" }}>
+                    <ImageOff size={20} color="#C0A0B0" />
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-bold line-clamp-2" style={{ fontFamily: "'Angelica', cursive", color: "#12002A" }}>{scraped.title}</p>
                   <div className="flex items-center gap-2 mt-1">
-                    {scraped.price && <span className="text-sm font-bold" style={{ fontFamily: "'DM Mono', monospace", color: "#FF1493" }}>{fmt(scraped.price)}</span>}
+                    {scraped.price != null && <span className="text-sm font-bold" style={{ fontFamily: "'DM Mono', monospace", color: "#FF1493" }}>{fmt(scraped.price)}</span>}
+                    {scraped.price == null && <span className="text-xs" style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#C0A0B0" }}>No price found</span>}
                     {scraped.onSale && scraped.originalPrice && scraped.originalPrice !== scraped.price && <span className="text-xs line-through" style={{ fontFamily: "'DM Mono', monospace", color: "#C0A0B0" }}>{fmt(scraped.originalPrice)}</span>}
                     {scraped.onSale && scraped.salePercent && <SaleBadge pct={scraped.salePercent} />}
                   </div>
                 </div>
               </div>
+              {scraped.availableImages.length > 0 ? (
               <div>
                 <p className="text-xs font-bold mb-2" style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#7A5E8A" }}>Choose a photo</p>
                 <div className="grid grid-cols-4 gap-2">
@@ -240,6 +272,9 @@ function AddItemModal({ onClose, onAdd }: { onClose: () => void; onAdd: (item: W
                   ))}
                 </div>
               </div>
+              ) : (
+                <p className="text-xs text-center py-2" style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#C0A0B0" }}>No photos found on that page.</p>
+              )}
               <label className="flex items-center gap-3 cursor-pointer">
                 <div onClick={() => setNotifyOnSale(!notifyOnSale)} className="relative w-10 h-5 rounded-full transition-colors duration-200 cursor-pointer flex-shrink-0" style={{ background: notifyOnSale ? "#FF1493" : "#E8C8F0" }}>
                   <div className="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200" style={{ transform: notifyOnSale ? "translateX(20px)" : "translateX(0)" }} />
@@ -382,27 +417,29 @@ export default function App() {
       <div className="w-full max-w-[1100px] rounded-[2rem] overflow-hidden shadow-2xl flex flex-col" style={{ background: "#FFE8F5", height: "85vh", border: "3px solid #fff" }}>
 
         {/* Top bar */}
-        <div className="flex items-center justify-between px-6 py-4 flex-shrink-0" style={{ background: "#fff" }}>
+        <div className={`flex items-center px-6 py-4 flex-shrink-0 ${lists.length === 0 ? "justify-center" : "justify-between"}`} style={{ background: "#fff" }}>
           <div className="flex items-center gap-2">
             <img src={heartsLogo} alt="" width={28} className="select-none" draggable={false} />
             <span className="text-2xl font-semibold" style={{ fontFamily: "'Angelica', cursive", color: "#FF1493", letterSpacing: "0.02em" }}>Wishly</span>
           </div>
-          <div className="flex items-center gap-2">
-            <button onClick={() => setShowShare(true)} className="flex items-center gap-1.5 rounded-2xl px-4 py-2 text-sm font-bold transition-all" style={{ background: "#fff", border: "2px solid #FFD6F0", color: "#FF1493", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
-              <Share2 size={14} /> Share
-            </button>
-            <div className="relative">
-              <button onClick={() => setShowNotifs(!showNotifs)} className="relative w-9 h-9 rounded-full flex items-center justify-center transition-all" style={{ background: "#FFF5FD", border: "2px solid #FFD6F0" }}>
-                <Bell size={16} color="#FF1493" />
-                {unreadCount > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "#42FAE1", color: "#006B5E", fontFamily: "'DM Mono', monospace" }}>{unreadCount}</span>}
+          {lists.length > 0 && (
+            <div className="flex items-center gap-2">
+              <button onClick={() => setShowShare(true)} className="flex items-center gap-1.5 rounded-2xl px-4 py-2 text-sm font-bold transition-all" style={{ background: "#fff", border: "2px solid #FFD6F0", color: "#FF1493", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
+                <Share2 size={14} /> Share
               </button>
-              {showNotifs && (
-                <div onClick={() => setShowNotifs(false)} className="fixed inset-0 z-30">
-                  <NotificationsPanel notifications={notifications} onMarkRead={id => setNotifications(ns => ns.map(n => n.id === id ? { ...n, read: true } : n))} onClose={() => setShowNotifs(false)} />
-                </div>
-              )}
+              <div className="relative">
+                <button onClick={() => setShowNotifs(!showNotifs)} className="relative w-9 h-9 rounded-full flex items-center justify-center transition-all" style={{ background: "#FFF5FD", border: "2px solid #FFD6F0" }}>
+                  <Bell size={16} color="#FF1493" />
+                  {unreadCount > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "#42FAE1", color: "#006B5E", fontFamily: "'DM Mono', monospace" }}>{unreadCount}</span>}
+                </button>
+                {showNotifs && (
+                  <div onClick={() => setShowNotifs(false)} className="fixed inset-0 z-30">
+                    <NotificationsPanel notifications={notifications} onMarkRead={id => setNotifications(ns => ns.map(n => n.id === id ? { ...n, read: true } : n))} onClose={() => setShowNotifs(false)} />
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Body */}
@@ -527,7 +564,7 @@ export default function App() {
                   </button>
                 </div>
               ) : (
-                <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))" }}>
+                <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
                   {activeList.items.map(item => (
                     <ItemCard
                       key={item.id} item={item} isSelected={selectedItem?.id === item.id}
@@ -551,16 +588,22 @@ export default function App() {
             <div className="flex-1 flex flex-col min-w-0 rounded-[1.5rem] m-3 overflow-hidden" style={{ background: "#fff" }}>
               <>
                 {/* Big image */}
-                <div className="relative flex-shrink-0" style={{ height: "260px", background: "#FFE8F5" }}>
-                  <img src={selectedItem.selectedImage} alt={selectedItem.title} className="w-full h-full object-cover" />
+                <div className="relative flex-shrink-0 flex items-center justify-center" style={{ height: "260px", background: "#FFE8F5" }}>
+                  {selectedItem.selectedImage ? (
+                    <img src={selectedItem.selectedImage} alt={selectedItem.title} className="w-full h-full object-cover" />
+                  ) : (
+                    <ImageOff size={40} color="#FFB6D9" />
+                  )}
                   {selectedItem.onSale && (
                     <div className="absolute top-4 left-4"><SaleBadge pct={selectedItem.salePercent!} /></div>
                   )}
                   {/* Quick actions */}
                   <div className="absolute top-4 right-4 flex gap-2">
-                    <button onClick={() => setShowPhotoPicker(true)} className="flex items-center gap-1.5 rounded-2xl px-3 py-1.5 text-xs font-bold backdrop-blur-sm" style={{ background: "rgba(255,255,255,0.9)", color: "#FF1493", fontFamily: "'ZT Bros Oskon 90s', sans-serif", border: "2px solid #FFD6F0" }}>
-                      <Search size={11} />Photos
-                    </button>
+                    {selectedItem.availableImages.length > 0 && (
+                      <button onClick={() => setShowPhotoPicker(true)} className="flex items-center gap-1.5 rounded-2xl px-3 py-1.5 text-xs font-bold backdrop-blur-sm" style={{ background: "rgba(255,255,255,0.9)", color: "#FF1493", fontFamily: "'ZT Bros Oskon 90s', sans-serif", border: "2px solid #FFD6F0" }}>
+                        <Search size={11} />Photos
+                      </button>
+                    )}
                     <button onClick={() => deleteItem(selectedItem.id)} className="w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm" style={{ background: "rgba(255,255,255,0.9)", border: "2px solid #FFD6F0" }}>
                       <Trash2 size={13} color="#FF1493" />
                     </button>
@@ -593,8 +636,8 @@ export default function App() {
                         <span className="text-sm line-through" style={{ fontFamily: "'DM Mono', monospace", color: "#C0A0B0" }}>{fmt(selectedItem.originalPrice)}</span>
                       )}
                     </div>
-                    <a href={selectedItem.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 rounded-2xl px-4 py-2 text-sm font-bold transition-all" style={{ background: "linear-gradient(135deg, #42FAE1, #00D4B8)", color: "#003D35", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
-                      Visit {selectedItem.store} <ExternalLink size={13} />
+                    <a href={selectedItem.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 rounded-xl px-2.5 py-1 text-xs font-bold transition-all" style={{ background: "linear-gradient(135deg, #42FAE1, #00D4B8)", color: "#003D35", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
+                      Visit {selectedItem.store} <ExternalLink size={10} />
                     </a>
                   </div>
 
