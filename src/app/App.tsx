@@ -901,7 +901,7 @@ export default function App() {
                     />
                   ))}
                   {/* Add tile */}
-                  <button onClick={() => setShowAddItem(true)} className="aspect-square rounded-2xl flex flex-col items-center justify-center gap-1 transition-all" style={{ border: "2.5px dashed #FFB6D9", background: "#fff5fb" }}>
+                  <button onClick={() => setShowAddItem(true)} className="rounded-2xl flex flex-col items-center justify-center gap-1 transition-all" style={{ border: "2.5px dashed #FFB6D9", background: "#fff5fb" }}>
                     <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "#FFE8F5" }}><Plus size={15} color="#FF1493" /></div>
                     <span className="text-xs font-bold" style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#FF1493" }}>Add</span>
                   </button>
