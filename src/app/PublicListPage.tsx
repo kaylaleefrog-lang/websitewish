@@ -91,6 +91,14 @@ export default function PublicListPage({ listId }: { listId: string }) {
                       <div className="absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all" style={{ background: "rgba(255,255,255,0.85)" }}>
                         <ExternalLink size={12} color="#FF1493" />
                       </div>
+                      <button
+                        onClick={e => { e.preventDefault(); e.stopPropagation(); toggleClaim(item); }}
+                        title={item.claimed ? "Getting this — click to undo" : "Mark that you're getting this"}
+                        className="absolute bottom-2 left-2 w-6 h-6 rounded-full flex items-center justify-center backdrop-blur-sm transition-all"
+                        style={{ background: item.claimed ? "#42FAE1" : "rgba(255,255,255,0.85)" }}
+                      >
+                        <Check size={12} color={item.claimed ? "#006B5E" : "#7A5E8A"} />
+                      </button>
                     </div>
                     <div className="p-2.5">
                       <p className="text-xs font-bold leading-snug line-clamp-2 mb-1" style={{ fontFamily: "'Angelica', cursive", color: "#12002A", minHeight: "2.75em" }}>{item.title}</p>
@@ -102,16 +110,6 @@ export default function PublicListPage({ listId }: { listId: string }) {
                       </div>
                     </div>
                   </a>
-                  <button
-                    onClick={() => toggleClaim(item)}
-                    className="absolute bottom-2.5 right-2.5 flex items-center gap-1 rounded-full pl-2 pr-2.5 py-1 text-xs font-bold transition-all"
-                    style={{ background: item.claimed ? "#42FAE1" : "#fff", color: item.claimed ? "#006B5E" : "#7A5E8A", border: "2px solid", borderColor: item.claimed ? "#42FAE1" : "#FFD6F0", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}
-                  >
-                    <span className="w-3.5 h-3.5 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: item.claimed ? "#006B5E" : "transparent", border: item.claimed ? "none" : "1.5px solid #C0A0B0" }}>
-                      {item.claimed && <Check size={9} color="#fff" />}
-                    </span>
-                    {item.claimed ? "Getting this" : "I'll get this"}
-                  </button>
                 </div>
               ))}
             </div>
