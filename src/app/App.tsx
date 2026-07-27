@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
   Plus, X, Share2, Bell, Heart, ExternalLink, Tag, Check,
-  Copy, Trash2, Edit3, AlertCircle, Sparkles, ImageOff,
+  Copy, Trash2, Edit3, AlertCircle, Sparkles, ImageOff, LayoutGrid, List,
   Gift, Home, Star, Shirt, BookOpen, Leaf, Palette, ShoppingBag, Search
 } from "lucide-react";
 import heartsLogo from "../assets/images/hearts-logo.png";
@@ -21,6 +21,7 @@ interface WishlistItem {
   store: string;
   addedAt: Date;
   notifyOnSale: boolean;
+  priority: boolean;
 }
 
 interface Wishlist {
@@ -45,7 +46,7 @@ interface Notification {
 // ─── Real product scraper ──────────────────────────────────────────────────────
 // Hits our own /api/scrape serverless function, which fetches the page
 // server-side (avoiding CORS) and parses JSON-LD/Open Graph product data.
-async function scrapeProduct(url: string): Promise<Omit<WishlistItem, "id" | "addedAt" | "notifyOnSale" | "selectedImage">> {
+async function scrapeProduct(url: string): Promise<Omit<WishlistItem, "id" | "addedAt" | "notifyOnSale" | "selectedImage" | "priority">> {
   const res = await fetch(`/api/scrape?url=${encodeURIComponent(url)}`);
   const data = await res.json();
   if (!res.ok) throw new Error(data?.error || "Couldn't fetch that link");
@@ -92,9 +93,9 @@ function SaleBadge({ pct }: { pct: number }) {
   );
 }
 
-function ItemCard({ item, onDelete, onChangePhoto, onClick, isSelected }: {
+function ItemCard({ item, onDelete, onChangePhoto, onClick, onTogglePriority, isSelected }: {
   item: WishlistItem; onDelete: () => void; onChangePhoto: (img: string) => void;
-  onClick: () => void; isSelected: boolean;
+  onClick: () => void; onTogglePriority: () => void; isSelected: boolean;
 }) {
   return (
     <button
@@ -119,6 +120,14 @@ function ItemCard({ item, onDelete, onChangePhoto, onClick, isSelected }: {
           {item.onSale && (
             <div className="absolute top-2 left-2"><SaleBadge pct={item.salePercent!} /></div>
           )}
+          <button
+            onClick={e => { e.stopPropagation(); onTogglePriority(); }}
+            className="absolute bottom-2 left-2 w-6 h-6 rounded-full flex items-center justify-center backdrop-blur-sm transition-all"
+            style={{ background: item.priority ? "#FF1493" : "rgba(255,255,255,0.85)" }}
+            title={item.priority ? "Remove priority" : "Mark as priority"}
+          >
+            <Star size={12} fill={item.priority ? "#fff" : "none"} color={item.priority ? "#fff" : "#FF1493"} />
+          </button>
         </div>
         <div className="p-2.5">
           <p className="text-xs font-bold leading-snug line-clamp-2 mb-1" style={{ fontFamily: "'Angelica', cursive", color: "#12002A" }}>{item.title}</p>
@@ -140,6 +149,55 @@ function ItemCard({ item, onDelete, onChangePhoto, onClick, isSelected }: {
           <X size={11} />
         </button>
       </div>
+    </button>
+  );
+}
+
+function ItemListRow({ item, onDelete, onClick, onTogglePriority, isSelected }: {
+  item: WishlistItem; onDelete: () => void; onClick: () => void; onTogglePriority: () => void; isSelected: boolean;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="group flex items-center gap-3 w-full text-left rounded-2xl p-2 transition-all"
+      style={{
+        background: "#fff",
+        border: isSelected ? "2.5px solid #FF1493" : "2.5px solid transparent",
+        boxShadow: isSelected ? "0 0 0 4px #FF149322" : "0 2px 8px rgba(255,20,147,0.06)",
+      }}
+    >
+      <div className="relative w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 bg-pink-50 flex items-center justify-center">
+        {item.selectedImage ? (
+          <img src={item.selectedImage} alt={item.title} className="w-full h-full object-cover" />
+        ) : (
+          <ImageOff size={16} color="#FFB6D9" />
+        )}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-xs font-bold leading-snug truncate" style={{ fontFamily: "'Angelica', cursive", color: "#12002A" }}>{item.title}</p>
+        <div className="flex items-center gap-1.5">
+          {item.price !== null && <span className="text-xs font-bold" style={{ fontFamily: "'DM Mono', monospace", color: "#FF1493" }}>{fmt(item.price)}</span>}
+          {item.onSale && item.originalPrice && item.originalPrice !== item.price && (
+            <span className="text-xs line-through" style={{ fontFamily: "'DM Mono', monospace", color: "#C0A0B0" }}>{fmt(item.originalPrice)}</span>
+          )}
+          {item.onSale && <SaleBadge pct={item.salePercent!} />}
+        </div>
+      </div>
+      <button
+        onClick={e => { e.stopPropagation(); onTogglePriority(); }}
+        className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 transition-all"
+        style={{ background: item.priority ? "#FF1493" : "#FFF0FA" }}
+        title={item.priority ? "Remove priority" : "Mark as priority"}
+      >
+        <Star size={13} fill={item.priority ? "#fff" : "none"} color={item.priority ? "#fff" : "#FF1493"} />
+      </button>
+      <button
+        onClick={e => { e.stopPropagation(); onDelete(); }}
+        className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 opacity-0 group-hover:opacity-100 transition-all"
+        style={{ background: "#FF1493", color: "#fff" }}
+      >
+        <X size={12} />
+      </button>
     </button>
   );
 }
@@ -177,7 +235,7 @@ function AddItemModal({ onClose, onAdd }: { onClose: () => void; onAdd: (item: W
   const [url, setUrl] = useState("");
   const [step, setStep] = useState<"url" | "pick">("url");
   const [loading, setLoading] = useState(false);
-  const [scraped, setScraped] = useState<Omit<WishlistItem, "id" | "addedAt" | "notifyOnSale" | "selectedImage"> | null>(null);
+  const [scraped, setScraped] = useState<Omit<WishlistItem, "id" | "addedAt" | "notifyOnSale" | "selectedImage" | "priority"> | null>(null);
   const [selectedImg, setSelectedImg] = useState<string>("");
   const [notifyOnSale, setNotifyOnSale] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -283,7 +341,7 @@ function AddItemModal({ onClose, onAdd }: { onClose: () => void; onAdd: (item: W
               </label>
               <div className="flex gap-2">
                 <button onClick={() => setStep("url")} className="flex-1 rounded-2xl py-2.5 text-sm font-bold transition-colors" style={{ border: "2px solid #FFD6F0", fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#FF1493", background: "#fff" }}>Back</button>
-                <button onClick={() => { if (!scraped) return; onAdd({ ...scraped, id: uid(), selectedImage: selectedImg, addedAt: new Date(), notifyOnSale }); onClose(); }} className="flex-[2] rounded-2xl py-2.5 text-sm font-bold flex items-center justify-center gap-2" style={{ background: "linear-gradient(135deg, #FF1493, #FF69B4)", color: "#fff", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
+                <button onClick={() => { if (!scraped) return; onAdd({ ...scraped, id: uid(), selectedImage: selectedImg, addedAt: new Date(), notifyOnSale, priority: false }); onClose(); }} className="flex-[2] rounded-2xl py-2.5 text-sm font-bold flex items-center justify-center gap-2" style={{ background: "linear-gradient(135deg, #FF1493, #FF69B4)", color: "#fff", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
                   <Heart size={14} fill="#fff" />Add to wishlist
                 </button>
               </div>
@@ -374,10 +432,19 @@ export default function App() {
   const [editingListId, setEditingListId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
   const [showPhotoPicker, setShowPhotoPicker] = useState(false);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [sortBy, setSortBy] = useState<"default" | "priority" | "price-asc" | "price-desc">("default");
 
   const activeList = lists.find(l => l.id === activeListId)!;
   const selectedItem = activeList?.items.find(i => i.id === selectedItemId) ?? null;
   const unreadCount = notifications.filter(n => !n.read).length;
+
+  const sortedItems = activeList ? [...activeList.items].sort((a, b) => {
+    if (sortBy === "priority") return Number(b.priority) - Number(a.priority);
+    if (sortBy === "price-asc") return (a.price ?? Infinity) - (b.price ?? Infinity);
+    if (sortBy === "price-desc") return (b.price ?? -Infinity) - (a.price ?? -Infinity);
+    return 0;
+  }) : [];
 
   function addItem(item: WishlistItem) {
     setLists(ls => ls.map(l => l.id === activeListId ? { ...l, items: [item, ...l.items] } : l));
@@ -392,6 +459,9 @@ export default function App() {
   }
   function changePhoto(itemId: string, img: string) {
     setLists(ls => ls.map(l => l.id === activeListId ? { ...l, items: l.items.map(i => i.id === itemId ? { ...i, selectedImage: img } : i) } : l));
+  }
+  function togglePriority(itemId: string) {
+    setLists(ls => ls.map(l => l.id === activeListId ? { ...l, items: l.items.map(i => i.id === itemId ? { ...i, priority: !i.priority } : i) } : l));
   }
   function createList() {
     if (!newListName.trim()) return;
@@ -553,7 +623,32 @@ export default function App() {
 
             </div>
 
-            {/* Item grid */}
+            {/* View + sort controls */}
+            {activeList?.items.length > 0 && (
+              <div className="px-4 pb-2 flex-shrink-0 flex items-center justify-between gap-2">
+                <div className="flex rounded-xl overflow-hidden flex-shrink-0" style={{ border: "2px solid #FFD6F0" }}>
+                  <button onClick={() => setViewMode("grid")} className="w-7 h-7 flex items-center justify-center transition-colors" style={{ background: viewMode === "grid" ? "#FF1493" : "#fff", color: viewMode === "grid" ? "#fff" : "#FF1493" }} title="Grid view">
+                    <LayoutGrid size={13} />
+                  </button>
+                  <button onClick={() => setViewMode("list")} className="w-7 h-7 flex items-center justify-center transition-colors" style={{ background: viewMode === "list" ? "#FF1493" : "#fff", color: viewMode === "list" ? "#fff" : "#FF1493" }} title="List view">
+                    <List size={13} />
+                  </button>
+                </div>
+                <select
+                  value={sortBy}
+                  onChange={e => setSortBy(e.target.value as typeof sortBy)}
+                  className="text-xs font-bold rounded-xl px-2 py-1.5 focus:outline-none min-w-0"
+                  style={{ border: "2px solid #FFD6F0", color: "#FF1493", fontFamily: "'ZT Bros Oskon 90s', sans-serif", background: "#fff" }}
+                >
+                  <option value="default">Sort: Newest</option>
+                  <option value="priority">Sort: Priority</option>
+                  <option value="price-asc">Sort: Price low-high</option>
+                  <option value="price-desc">Sort: Price high-low</option>
+                </select>
+              </div>
+            )}
+
+            {/* Item grid / list */}
             <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-4 pb-4">
               {activeList?.items.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-40 text-center">
@@ -563,14 +658,30 @@ export default function App() {
                     <Plus size={12} className="inline mr-1" />Add item
                   </button>
                 </div>
+              ) : viewMode === "list" ? (
+                <div className="flex flex-col gap-2">
+                  {sortedItems.map(item => (
+                    <ItemListRow
+                      key={item.id} item={item} isSelected={selectedItem?.id === item.id}
+                      onClick={() => setSelectedItemId(item.id)}
+                      onDelete={() => deleteItem(item.id)}
+                      onTogglePriority={() => togglePriority(item.id)}
+                    />
+                  ))}
+                  <button onClick={() => setShowAddItem(true)} className="flex items-center justify-center gap-1.5 rounded-2xl py-2.5 transition-all" style={{ border: "2.5px dashed #FFB6D9", background: "#fff5fb" }}>
+                    <Plus size={13} color="#FF1493" />
+                    <span className="text-xs font-bold" style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#FF1493" }}>Add</span>
+                  </button>
+                </div>
               ) : (
-                <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
-                  {activeList.items.map(item => (
+                <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${selectedItem ? 2 : 4}, 1fr)` }}>
+                  {sortedItems.map(item => (
                     <ItemCard
                       key={item.id} item={item} isSelected={selectedItem?.id === item.id}
                       onClick={() => setSelectedItemId(item.id)}
                       onDelete={() => deleteItem(item.id)}
                       onChangePhoto={img => changePhoto(item.id, img)}
+                      onTogglePriority={() => togglePriority(item.id)}
                     />
                   ))}
                   {/* Add tile */}
