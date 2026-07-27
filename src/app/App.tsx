@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Plus, X, Share2, Bell, Heart, ExternalLink, Tag, Check,
   Copy, Trash2, Edit3, AlertCircle, Sparkles, ImageOff, LayoutGrid, List,
-  Gift, Home, Star, Shirt, BookOpen, Leaf, Palette, ShoppingBag, Search
+  Gift, Home, Star, Shirt, BookOpen, Leaf, Palette, ShoppingBag, Search, LogOut
 } from "lucide-react";
 import heartsLogo from "../assets/images/hearts-logo.png";
 
@@ -19,7 +19,7 @@ interface WishlistItem {
   onSale: boolean;
   salePercent: number | null;
   store: string;
-  addedAt: Date;
+  addedAt: string;
   notifyOnSale: boolean;
   priority: boolean;
 }
@@ -29,7 +29,12 @@ interface Wishlist {
   name: string;
   icon: string;
   items: WishlistItem[];
-  createdAt: Date;
+  createdAt: string;
+}
+
+interface User {
+  id: string;
+  email: string;
 }
 
 interface Notification {
@@ -61,6 +66,63 @@ async function scrapeProduct(url: string): Promise<Omit<WishlistItem, "id" | "ad
     salePercent: data.salePercent,
     store: data.store,
   };
+}
+
+// ─── Backend API ──────────────────────────────────────────────────────────────
+// Thin wrappers around our /api/* serverless routes. Sessions are tracked
+// with an httpOnly cookie the browser sends automatically, so there's no
+// token to manage here.
+async function apiFetch(path: string, options: RequestInit = {}) {
+  const res = await fetch(path, {
+    ...options,
+    headers: { "Content-Type": "application/json", ...(options.headers || {}) },
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data?.error || "Something went wrong");
+  return data;
+}
+
+async function fetchMe(): Promise<User | null> {
+  const data = await apiFetch("/api/auth/me");
+  return data.user;
+}
+async function apiSignup(email: string, password: string): Promise<User> {
+  const data = await apiFetch("/api/auth/signup", { method: "POST", body: JSON.stringify({ email, password }) });
+  return data.user;
+}
+async function apiLogin(email: string, password: string): Promise<User> {
+  const data = await apiFetch("/api/auth/login", { method: "POST", body: JSON.stringify({ email, password }) });
+  return data.user;
+}
+async function apiLogout(): Promise<void> {
+  await apiFetch("/api/auth/logout", { method: "POST" });
+}
+
+async function fetchLists(): Promise<Wishlist[]> {
+  const data = await apiFetch("/api/lists");
+  return data.lists;
+}
+async function apiCreateList(name: string, icon: string): Promise<Wishlist> {
+  const data = await apiFetch("/api/lists", { method: "POST", body: JSON.stringify({ name, icon }) });
+  return data.list;
+}
+async function apiRenameList(id: string, name: string): Promise<Wishlist> {
+  const data = await apiFetch(`/api/lists/${id}`, { method: "PATCH", body: JSON.stringify({ name }) });
+  return data.list;
+}
+async function apiDeleteList(id: string): Promise<void> {
+  await apiFetch(`/api/lists/${id}`, { method: "DELETE" });
+}
+async function apiCreateItem(payload: Record<string, unknown>): Promise<WishlistItem> {
+  const data = await apiFetch("/api/items", { method: "POST", body: JSON.stringify(payload) });
+  return data.item;
+}
+async function apiPatchItem(id: string, payload: Record<string, unknown>): Promise<WishlistItem> {
+  const data = await apiFetch(`/api/items/${id}`, { method: "PATCH", body: JSON.stringify(payload) });
+  return data.item;
+}
+async function apiDeleteItem(id: string): Promise<void> {
+  await apiFetch(`/api/items/${id}`, { method: "DELETE" });
 }
 
 // ─── Seed data ────────────────────────────────────────────────────────────────
@@ -231,7 +293,7 @@ function PhotoPickerModal({ images, selected, onSelect, onClose }: {
   );
 }
 
-function AddItemModal({ onClose, onAdd }: { onClose: () => void; onAdd: (item: WishlistItem) => void }) {
+function AddItemModal({ onClose, onAdd }: { onClose: () => void; onAdd: (item: Omit<WishlistItem, "id" | "addedAt" | "priority">) => void }) {
   const [url, setUrl] = useState("");
   const [step, setStep] = useState<"url" | "pick">("url");
   const [loading, setLoading] = useState(false);
@@ -341,7 +403,7 @@ function AddItemModal({ onClose, onAdd }: { onClose: () => void; onAdd: (item: W
               </label>
               <div className="flex gap-2">
                 <button onClick={() => setStep("url")} className="flex-1 rounded-2xl py-2.5 text-sm font-bold transition-colors" style={{ border: "2px solid #FFD6F0", fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#FF1493", background: "#fff" }}>Back</button>
-                <button onClick={() => { if (!scraped) return; onAdd({ ...scraped, id: uid(), selectedImage: selectedImg, addedAt: new Date(), notifyOnSale, priority: false }); onClose(); }} className="flex-[2] rounded-2xl py-2.5 text-sm font-bold flex items-center justify-center gap-2" style={{ background: "linear-gradient(135deg, #FF1493, #FF69B4)", color: "#fff", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
+                <button onClick={() => { if (!scraped) return; onAdd({ ...scraped, selectedImage: selectedImg, notifyOnSale }); onClose(); }} className="flex-[2] rounded-2xl py-2.5 text-sm font-bold flex items-center justify-center gap-2" style={{ background: "linear-gradient(135deg, #FF1493, #FF69B4)", color: "#fff", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
                   <Heart size={14} fill="#fff" />Add to wishlist
                 </button>
               </div>
@@ -417,8 +479,88 @@ function NotificationsPanel({ notifications, onMarkRead, onClose }: { notificati
   );
 }
 
+function LoadingScreen() {
+  return (
+    <div className="min-h-screen flex items-center justify-center" style={{ background: "#FFFFFF", backgroundImage: polkaDotBg, cursor: heartCursor }}>
+      <div className="w-8 h-8 border-4 rounded-full animate-spin" style={{ borderColor: "#FFD6F0", borderTopColor: "#FF1493" }} />
+    </div>
+  );
+}
+
+function AuthScreen({ onAuthed }: { onAuthed: (user: User) => void }) {
+  const [mode, setMode] = useState<"login" | "signup">("login");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email.trim() || !password || loading) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const user = mode === "login" ? await apiLogin(email.trim(), password) : await apiSignup(email.trim(), password);
+      onAuthed(user);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center p-3 md:p-6" style={{ background: "#FFFFFF", backgroundImage: polkaDotBg, cursor: heartCursor }}>
+      <div className="w-full max-w-sm rounded-[2rem] shadow-2xl p-8" style={{ background: "#FFE8F5", border: "3px solid #fff" }}>
+        <div className="flex flex-col items-center mb-6">
+          <img src={heartsLogo} alt="" width={64} className="select-none mb-2" draggable={false} />
+          <h1 className="text-2xl font-semibold" style={{ fontFamily: "'Angelica', cursive", color: "#FF1493" }}>Wishly</h1>
+          <p className="text-sm mt-1" style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#7A5E8A" }}>
+            {mode === "login" ? "Welcome back!" : "Create your account"}
+          </p>
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <input
+            type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" autoFocus
+            className="w-full rounded-2xl px-4 py-3 text-sm focus:outline-none"
+            style={{ background: "#fff", border: "2px solid #FFD6F0", fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#12002A" }}
+          />
+          <input
+            type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Password"
+            className="w-full rounded-2xl px-4 py-3 text-sm focus:outline-none"
+            style={{ background: "#fff", border: "2px solid #FFD6F0", fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#12002A" }}
+          />
+          {error && (
+            <div className="flex items-center gap-2 rounded-2xl p-3 text-xs font-bold" style={{ background: "#FFEAF0", color: "#D6003F", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
+              <AlertCircle size={14} />{error}
+            </div>
+          )}
+          <button
+            type="submit" disabled={loading || !email.trim() || !password}
+            className="w-full rounded-2xl py-3 text-sm font-bold flex items-center justify-center gap-2 transition-opacity disabled:opacity-40"
+            style={{ background: "linear-gradient(135deg, #FF1493, #FF69B4)", color: "#fff", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}
+          >
+            {loading ? <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : mode === "login" ? "Log in" : "Sign up"}
+          </button>
+        </form>
+        <button
+          onClick={() => { setMode(m => m === "login" ? "signup" : "login"); setError(null); }}
+          className="w-full text-center text-xs font-bold mt-4"
+          style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#FF1493" }}
+        >
+          {mode === "login" ? "Need an account? Sign up" : "Already have an account? Log in"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main App ─────────────────────────────────────────────────────────────────
 export default function App() {
+  const [user, setUser] = useState<User | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [listsLoading, setListsLoading] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [lists, setLists] = useState<Wishlist[]>([]);
   const [activeListId, setActiveListId] = useState<string>("");
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
@@ -435,9 +577,34 @@ export default function App() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [sortBy, setSortBy] = useState<"default" | "priority" | "price-asc" | "price-desc">("default");
 
+  useEffect(() => {
+    fetchMe().then(setUser).catch(() => setUser(null)).finally(() => setAuthChecked(true));
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    setListsLoading(true);
+    fetchLists()
+      .then(ls => { setLists(ls); setActiveListId(ls[0]?.id ?? ""); })
+      .catch(err => setActionError(err instanceof Error ? err.message : "Couldn't load your wishlists"))
+      .finally(() => setListsLoading(false));
+  }, [user]);
+
+  async function handleLogout() {
+    try { await apiLogout(); } catch { /* clear local state regardless */ }
+    setUser(null);
+    setLists([]);
+    setActiveListId("");
+    setSelectedItemId(null);
+    setNotifications([]);
+  }
+
   const activeList = lists.find(l => l.id === activeListId)!;
   const selectedItem = activeList?.items.find(i => i.id === selectedItemId) ?? null;
   const unreadCount = notifications.filter(n => !n.read).length;
+
+  if (!authChecked || listsLoading) return <LoadingScreen />;
+  if (!user) return <AuthScreen onAuthed={setUser} />;
 
   const sortedItems = activeList ? [...activeList.items].sort((a, b) => {
     if (sortBy === "priority") return Number(b.priority) - Number(a.priority);
@@ -446,38 +613,75 @@ export default function App() {
     return 0;
   }) : [];
 
-  function addItem(item: WishlistItem) {
-    setLists(ls => ls.map(l => l.id === activeListId ? { ...l, items: [item, ...l.items] } : l));
-    setSelectedItemId(item.id);
-    if (item.onSale && item.salePercent) {
-      setNotifications(ns => [{ id: uid(), itemTitle: item.title, listName: activeList.name, oldPrice: item.originalPrice!, newPrice: item.price!, salePercent: item.salePercent!, timestamp: new Date(), read: false }, ...ns]);
+  async function addItem(input: Omit<WishlistItem, "id" | "addedAt" | "priority">) {
+    try {
+      const item = await apiCreateItem({ listId: activeListId, ...input });
+      setLists(ls => ls.map(l => l.id === activeListId ? { ...l, items: [item, ...l.items] } : l));
+      setSelectedItemId(item.id);
+      if (item.onSale && item.salePercent) {
+        setNotifications(ns => [{ id: uid(), itemTitle: item.title, listName: activeList.name, oldPrice: item.originalPrice!, newPrice: item.price!, salePercent: item.salePercent!, timestamp: new Date(), read: false }, ...ns]);
+      }
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Couldn't add that item");
     }
   }
-  function deleteItem(itemId: string) {
-    setLists(ls => ls.map(l => l.id === activeListId ? { ...l, items: l.items.filter(i => i.id !== itemId) } : l));
-    if (selectedItemId === itemId) setSelectedItemId(null);
+  async function deleteItem(itemId: string) {
+    try {
+      await apiDeleteItem(itemId);
+      setLists(ls => ls.map(l => l.id === activeListId ? { ...l, items: l.items.filter(i => i.id !== itemId) } : l));
+      if (selectedItemId === itemId) setSelectedItemId(null);
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Couldn't delete that item");
+    }
   }
-  function changePhoto(itemId: string, img: string) {
-    setLists(ls => ls.map(l => l.id === activeListId ? { ...l, items: l.items.map(i => i.id === itemId ? { ...i, selectedImage: img } : i) } : l));
+  async function changePhoto(itemId: string, img: string) {
+    try {
+      const item = await apiPatchItem(itemId, { selectedImage: img });
+      setLists(ls => ls.map(l => l.id === activeListId ? { ...l, items: l.items.map(i => i.id === itemId ? item : i) } : l));
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Couldn't change that photo");
+    }
   }
-  function togglePriority(itemId: string) {
-    setLists(ls => ls.map(l => l.id === activeListId ? { ...l, items: l.items.map(i => i.id === itemId ? { ...i, priority: !i.priority } : i) } : l));
+  async function togglePriority(itemId: string) {
+    const current = activeList?.items.find(i => i.id === itemId);
+    if (!current) return;
+    try {
+      const item = await apiPatchItem(itemId, { priority: !current.priority });
+      setLists(ls => ls.map(l => l.id === activeListId ? { ...l, items: l.items.map(i => i.id === itemId ? item : i) } : l));
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Couldn't update priority");
+    }
   }
-  function createList() {
+  async function createList() {
     if (!newListName.trim()) return;
-    const nl: Wishlist = { id: uid(), name: newListName.trim(), icon: newListIcon, items: [], createdAt: new Date() };
-    setLists(ls => [...ls, nl]); setActiveListId(nl.id); setSelectedItemId(null);
-    setNewListName(""); setNewListIcon("star"); setShowNewList(false);
+    try {
+      const nl = await apiCreateList(newListName.trim(), newListIcon);
+      setLists(ls => [...ls, nl]); setActiveListId(nl.id); setSelectedItemId(null);
+      setNewListName(""); setNewListIcon("star"); setShowNewList(false);
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Couldn't create that list");
+    }
   }
-  function deleteList(id: string) {
-    const remaining = lists.filter(l => l.id !== id);
-    setLists(remaining);
-    if (activeListId === id) { setActiveListId(remaining[0]?.id ?? ""); setSelectedItemId(null); }
+  async function deleteList(id: string) {
+    try {
+      await apiDeleteList(id);
+      const remaining = lists.filter(l => l.id !== id);
+      setLists(remaining);
+      if (activeListId === id) { setActiveListId(remaining[0]?.id ?? ""); setSelectedItemId(null); }
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Couldn't delete that list");
+    }
   }
-  function saveRename() {
-    if (!editingName.trim()) return;
-    setLists(ls => ls.map(l => l.id === editingListId ? { ...l, name: editingName.trim() } : l));
+  async function saveRename() {
+    if (!editingName.trim() || !editingListId) { setEditingListId(null); return; }
+    const id = editingListId;
     setEditingListId(null);
+    try {
+      const updated = await apiRenameList(id, editingName.trim());
+      setLists(ls => ls.map(l => l.id === id ? { ...l, name: updated.name } : l));
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Couldn't rename that list");
+    }
   }
 
   return (
@@ -492,25 +696,37 @@ export default function App() {
             <img src={heartsLogo} alt="" width={28} className="select-none" draggable={false} />
             <span className="text-2xl font-semibold" style={{ fontFamily: "'Angelica', cursive", color: "#FF1493", letterSpacing: "0.02em" }}>Wishly</span>
           </div>
-          {lists.length > 0 && (
-            <div className="flex items-center gap-2">
-              <button onClick={() => setShowShare(true)} className="flex items-center gap-1.5 rounded-2xl px-4 py-2 text-sm font-bold transition-all" style={{ background: "#fff", border: "2px solid #FFD6F0", color: "#FF1493", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
-                <Share2 size={14} /> Share
-              </button>
-              <div className="relative">
-                <button onClick={() => setShowNotifs(!showNotifs)} className="relative w-9 h-9 rounded-full flex items-center justify-center transition-all" style={{ background: "#FFF5FD", border: "2px solid #FFD6F0" }}>
-                  <Bell size={16} color="#FF1493" />
-                  {unreadCount > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "#42FAE1", color: "#006B5E", fontFamily: "'DM Mono', monospace" }}>{unreadCount}</span>}
+          <div className="flex items-center gap-2">
+            {lists.length > 0 && (
+              <>
+                <button onClick={() => setShowShare(true)} className="flex items-center gap-1.5 rounded-2xl px-4 py-2 text-sm font-bold transition-all" style={{ background: "#fff", border: "2px solid #FFD6F0", color: "#FF1493", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
+                  <Share2 size={14} /> Share
                 </button>
-                {showNotifs && (
-                  <div onClick={() => setShowNotifs(false)} className="fixed inset-0 z-30">
-                    <NotificationsPanel notifications={notifications} onMarkRead={id => setNotifications(ns => ns.map(n => n.id === id ? { ...n, read: true } : n))} onClose={() => setShowNotifs(false)} />
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+                <div className="relative">
+                  <button onClick={() => setShowNotifs(!showNotifs)} className="relative w-9 h-9 rounded-full flex items-center justify-center transition-all" style={{ background: "#FFF5FD", border: "2px solid #FFD6F0" }}>
+                    <Bell size={16} color="#FF1493" />
+                    {unreadCount > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "#42FAE1", color: "#006B5E", fontFamily: "'DM Mono', monospace" }}>{unreadCount}</span>}
+                  </button>
+                  {showNotifs && (
+                    <div onClick={() => setShowNotifs(false)} className="fixed inset-0 z-30">
+                      <NotificationsPanel notifications={notifications} onMarkRead={id => setNotifications(ns => ns.map(n => n.id === id ? { ...n, read: true } : n))} onClose={() => setShowNotifs(false)} />
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+            <button onClick={handleLogout} title={`Log out (${user.email})`} className="w-9 h-9 rounded-full flex items-center justify-center transition-all" style={{ background: "#FFF5FD", border: "2px solid #FFD6F0" }}>
+              <LogOut size={15} color="#FF1493" />
+            </button>
+          </div>
         </div>
+
+        {actionError && (
+          <div className="flex items-center justify-between px-6 py-2 text-xs font-bold flex-shrink-0" style={{ background: "#FFEAF0", color: "#D6003F", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
+            <span className="flex items-center gap-1.5"><AlertCircle size={12} />{actionError}</span>
+            <button onClick={() => setActionError(null)}><X size={12} /></button>
+          </div>
+        )}
 
         {/* Body */}
         {lists.length === 0 ? (
