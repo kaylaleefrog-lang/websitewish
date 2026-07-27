@@ -7,7 +7,7 @@ import {
 import heartsLogo from "../assets/images/hearts-logo.png";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-interface WishlistItem {
+export interface WishlistItem {
   id: string;
   url: string;
   title: string;
@@ -24,7 +24,7 @@ interface WishlistItem {
   priority: boolean;
 }
 
-interface Wishlist {
+export interface Wishlist {
   id: string;
   name: string;
   icon: string;
@@ -126,28 +126,28 @@ async function apiDeleteItem(id: string): Promise<void> {
 }
 
 // ─── Seed data ────────────────────────────────────────────────────────────────
-const LIST_ICONS: { value: string; Icon: React.ElementType }[] = [
+export const LIST_ICONS: { value: string; Icon: React.ElementType }[] = [
   { value: "gift", Icon: Gift }, { value: "home", Icon: Home }, { value: "star", Icon: Star },
   { value: "shirt", Icon: Shirt }, { value: "book", Icon: BookOpen }, { value: "leaf", Icon: Leaf },
   { value: "palette", Icon: Palette }, { value: "bag", Icon: ShoppingBag },
 ];
-function ListIcon({ value, size = 16 }: { value: string; size?: number }) {
+export function ListIcon({ value, size = 16 }: { value: string; size?: number }) {
   const found = LIST_ICONS.find(i => i.value === value);
   if (!found) return <Star size={size} />;
   return <found.Icon size={size} />;
 }
 
 function uid() { return Math.random().toString(36).slice(2, 10); }
-function fmt(n: number) { return "$" + n.toFixed(2); }
+export function fmt(n: number) { return "$" + n.toFixed(2); }
 
 // ─── Polka dot background ─────────────────────────────────────────────────────
-const polkaDotBg = `url("data:image/svg+xml,%3Csvg width='64' height='64' viewBox='0 0 64 64' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='32' cy='32' r='7.5' fill='%2342FAE1' fill-opacity='0.35'/%3E%3C/svg%3E")`;
+export const polkaDotBg = `url("data:image/svg+xml,%3Csvg width='64' height='64' viewBox='0 0 64 64' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='32' cy='32' r='7.5' fill='%2342FAE1' fill-opacity='0.35'/%3E%3C/svg%3E")`;
 
 // ─── Custom mint arrow cursor ──────────────────────────────────────────────────
 const heartCursor = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M3 2 L3 19 L7.5 15.2 L10.5 21.5 L13.2 20.2 L10.2 14 L16 14 Z' fill='%2342FAE1' stroke='white' stroke-width='1.3' stroke-linejoin='round'/%3E%3C/svg%3E") 3 2, auto`;
 
 // ─── Subcomponents ────────────────────────────────────────────────────────────
-function SaleBadge({ pct }: { pct: number }) {
+export function SaleBadge({ pct }: { pct: number }) {
   return (
     <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: "#42FAE1", color: "#006B5E", fontFamily: "'DM Mono', monospace" }}>
       <Tag size={9} />-{pct}%
@@ -417,7 +417,7 @@ function AddItemModal({ onClose, onAdd }: { onClose: () => void; onAdd: (item: O
 
 function ShareModal({ list, onClose }: { list: Wishlist; onClose: () => void }) {
   const [copied, setCopied] = useState(false);
-  const shareUrl = `https://wishly.app/list/${list.id}`;
+  const shareUrl = `${window.location.origin}/list/${list.id}`;
   function copy() { navigator.clipboard.writeText(shareUrl).catch(() => {}); setCopied(true); setTimeout(() => setCopied(false), 2000); }
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
