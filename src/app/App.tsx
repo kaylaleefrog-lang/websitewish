@@ -383,7 +383,8 @@ export default function App() {
         {/* Top bar */}
         <div className="flex items-center justify-between px-6 py-4 flex-shrink-0" style={{ background: "#fff" }}>
           <div className="flex items-center gap-2">
-            <span style={{ fontFamily: "'Swirly Kids', cursive", fontSize: "60px", lineHeight: 1, color: "#FF1493" }}>Wishly</span>
+            <Heart size={20} fill="#FF1493" color="#FF1493" />
+            <span className="text-2xl font-semibold" style={{ fontFamily: "'Angelica', cursive", color: "#FF1493", letterSpacing: "0.02em" }}>Wishly</span>
           </div>
           <div className="flex items-center gap-2">
             <button onClick={() => setShowShare(true)} className="flex items-center gap-1.5 rounded-2xl px-4 py-2 text-sm font-bold transition-all" style={{ background: "#fff", border: "2px solid #FFD6F0", color: "#FF1493", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
@@ -408,8 +409,8 @@ export default function App() {
           /* Welcome screen — shown until the first wishlist is created */
           <div className="flex-1 flex items-center justify-center p-8">
             <div className="text-center max-w-sm">
-              <div className="w-20 h-20 rounded-3xl mx-auto mb-5 flex items-center justify-center" style={{ background: "linear-gradient(135deg, #FFE8F5, #E8FDF9)" }}>
-                <Heart size={36} fill="#FF1493" color="#FF1493" />
+              <div className="mb-5">
+                <span style={{ fontFamily: "'Swirly Kids', cursive", fontSize: "60px", lineHeight: 1, color: "#FF1493" }}>Wishly</span>
               </div>
               <h1 className="text-3xl font-semibold mb-2" style={{ fontFamily: "'Angelica', cursive", color: "#FF1493" }}>Hi! Welcome to Wishly :))</h1>
               <p className="text-base mb-6" style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#7A5E8A" }}>Would you like to create a new wishlist?</p>
