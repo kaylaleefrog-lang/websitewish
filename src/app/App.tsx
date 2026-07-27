@@ -384,7 +384,7 @@ export default function App() {
         {/* Top bar */}
         <div className="flex items-center justify-between px-6 py-4 flex-shrink-0" style={{ background: "#fff" }}>
           <div className="flex items-center gap-2">
-            <Heart size={20} fill="#FF1493" color="#FF1493" />
+            <img src={heartsLogo} alt="" width={28} className="select-none" draggable={false} />
             <span className="text-2xl font-semibold" style={{ fontFamily: "'Angelica', cursive", color: "#FF1493", letterSpacing: "0.02em" }}>Wishly</span>
           </div>
           <div className="flex items-center gap-2">
@@ -411,7 +411,7 @@ export default function App() {
           <div className="flex-1 flex items-center justify-center p-8">
             <div className="text-center max-w-sm">
               <div className="flex justify-center mb-5">
-                <img src={heartsLogo} alt="" width={170} className="select-none" draggable={false} />
+                <img src={heartsLogo} alt="" width={230} className="select-none" draggable={false} />
               </div>
               <h1 className="text-3xl font-semibold mb-2" style={{ fontFamily: "'Angelica', cursive", color: "#FF1493" }}>Hi! Welcome to Wishly :))</h1>
               <p className="text-base mb-6" style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#7A5E8A" }}>Would you like to create a new wishlist?</p>
