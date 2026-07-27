@@ -100,15 +100,18 @@ export default async function handler(req, res) {
     return;
   }
 
+  const onSale = product.originalPrice != null && product.price != null && product.originalPrice > product.price;
+  const salePercent = onSale ? Math.round((1 - product.price / product.originalPrice) * 100) : null;
+
   res.status(200).json({
     url: target,
     title: product.title,
     description: product.description,
     availableImages: product.images,
     price: product.price,
-    originalPrice: product.price,
-    onSale: false,
-    salePercent: null,
+    originalPrice: onSale ? product.originalPrice : product.price,
+    onSale,
+    salePercent,
     store: product.store,
   });
 }

@@ -73,17 +73,49 @@ function extractJsonLdProduct(html) {
   return null;
 }
 
-function extractPrice(offers) {
-  if (!offers) return null;
+function parseMoney(raw) {
+  if (raw == null) return null;
+  const n = parseFloat(String(raw).replace(/[^0-9.]/g, ""));
+  return isNaN(n) ? null : n;
+}
+
+// Sites that follow Google's Merchant/product structured-data guidance mark
+// discounted offers with priceSpecification entries typed as ListPrice
+// (original) vs SalePrice (current) — see
+// https://developers.google.com/search/docs/appearance/structured-data/product
+// This pulls both out when present, falling back to a single plain price.
+function extractPricing(offers) {
+  if (!offers) return { price: null, originalPrice: null };
   const list = Array.isArray(offers) ? offers : [offers];
+  let price = null;
+  let originalPrice = null;
+
   for (const o of list) {
-    const raw = o.price ?? o.priceSpecification?.price ?? o.lowPrice;
-    if (raw != null) {
-      const n = parseFloat(String(raw).replace(/[^0-9.]/g, ""));
-      if (!isNaN(n)) return n;
+    const direct = parseMoney(o.price) ?? parseMoney(o.lowPrice);
+    if (direct != null && price == null) price = direct;
+
+    const specs = o.priceSpecification
+      ? Array.isArray(o.priceSpecification) ? o.priceSpecification : [o.priceSpecification]
+      : [];
+    for (const spec of specs) {
+      const val = parseMoney(spec.price);
+      if (val == null) continue;
+      const type = String(spec.priceType || "").toLowerCase();
+      if (type.includes("sale")) {
+        price = val;
+      } else if (type.includes("list") || type.includes("regular") || type.includes("strikethrough")) {
+        originalPrice = val;
+      } else if (price == null) {
+        price = val;
+      }
     }
+
+    const listCandidate = parseMoney(o.highPrice) ?? parseMoney(o.listPrice) ?? parseMoney(o.regularPrice) ?? parseMoney(o.msrp);
+    if (listCandidate != null && originalPrice == null) originalPrice = listCandidate;
   }
-  return null;
+
+  if (originalPrice != null && price != null && originalPrice <= price) originalPrice = null;
+  return { price, originalPrice };
 }
 
 function toAbsoluteUrl(maybeRelative, baseUrl) {
@@ -125,10 +157,17 @@ export function parseProductFromHtml(html, baseUrl) {
     .filter(Boolean);
   const images = [...new Set(imageCandidates)].slice(0, 6);
 
+  const jsonLdPricing = extractPricing(product?.offers);
   const price =
-    extractPrice(product?.offers) ??
-    (meta["product:price:amount"] ? parseFloat(meta["product:price:amount"]) : null) ??
-    (meta["og:price:amount"] ? parseFloat(meta["og:price:amount"]) : null);
+    jsonLdPricing.price ??
+    parseMoney(meta["product:sale_price:amount"]) ??
+    parseMoney(meta["product:price:amount"]) ??
+    parseMoney(meta["og:price:amount"]);
+  let originalPrice =
+    jsonLdPricing.originalPrice ??
+    parseMoney(meta["product:original_price:amount"]) ??
+    (meta["product:sale_price:amount"] ? parseMoney(meta["product:price:amount"]) : null);
+  if (originalPrice != null && price != null && originalPrice <= price) originalPrice = null;
 
   const store = meta["og:site_name"] || (() => {
     try {
@@ -143,6 +182,7 @@ export function parseProductFromHtml(html, baseUrl) {
     description: description.trim(),
     images,
     price: price != null && !isNaN(price) ? price : null,
+    originalPrice: originalPrice != null && !isNaN(originalPrice) ? originalPrice : null,
     store,
   };
 }
