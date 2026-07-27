@@ -3,10 +3,13 @@
 -- -> Query / SQL Editor), before using signup/login on the live site.
 -- Safe to re-run: every statement is guarded with IF NOT EXISTS.
 
+-- email/password_hash are nullable: a guest browsing before they sign up
+-- gets a real row here with both left NULL (see api/auth/guest.js), which
+-- becomes a normal account once they sign up (see api/auth/claim.js).
 CREATE TABLE IF NOT EXISTS users (
   id TEXT PRIMARY KEY,
-  email TEXT UNIQUE NOT NULL,
-  password_hash TEXT NOT NULL,
+  email TEXT UNIQUE,
+  password_hash TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
@@ -39,8 +42,17 @@ CREATE TABLE IF NOT EXISTS items (
   store TEXT NOT NULL DEFAULT '',
   notify_on_sale BOOLEAN NOT NULL DEFAULT true,
   priority BOOLEAN NOT NULL DEFAULT false,
+  claimed BOOLEAN NOT NULL DEFAULT false,
   added_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Re-running this file against a database created before the "claimed"
+-- column existed adds it without touching existing rows.
+ALTER TABLE items ADD COLUMN IF NOT EXISTS claimed BOOLEAN NOT NULL DEFAULT false;
+
+-- Same idea for a database created before guest accounts existed.
+ALTER TABLE users ALTER COLUMN email DROP NOT NULL;
+ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL;
 
 CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_wishlists_user_id ON wishlists(user_id);

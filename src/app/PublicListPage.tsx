@@ -1,12 +1,26 @@
 import { useEffect, useState } from "react";
-import { ImageOff, ExternalLink, AlertCircle } from "lucide-react";
+import { ImageOff, ExternalLink, AlertCircle, Check } from "lucide-react";
 import heartsLogo from "../assets/images/hearts-logo.png";
-import { Wishlist, fmt, SaleBadge, ListIcon, polkaDotBg } from "./App";
+import { Wishlist, WishlistItem, fmt, SaleBadge, ListIcon, polkaDotBg } from "./App";
 
 const heartCursor = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M3 2 L3 19 L7.5 15.2 L10.5 21.5 L13.2 20.2 L10.2 14 L16 14 Z' fill='%2342FAE1' stroke='white' stroke-width='1.3' stroke-linejoin='round'/%3E%3C/svg%3E") 3 2, auto`;
 
+type PublicItem = WishlistItem & { claimed: boolean };
+type PublicWishlist = Omit<Wishlist, "items"> & { items: PublicItem[] };
+
+async function setClaimed(itemId: string, claimed: boolean): Promise<PublicItem> {
+  const res = await fetch("/api/public-claim", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ itemId, claimed }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(typeof data?.error === "string" ? data.error : "Couldn't update that");
+  return data.item;
+}
+
 export default function PublicListPage({ listId }: { listId: string }) {
-  const [list, setList] = useState<Wishlist | null>(null);
+  const [list, setList] = useState<PublicWishlist | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -18,6 +32,15 @@ export default function PublicListPage({ listId }: { listId: string }) {
       })
       .catch(err => setError(err instanceof Error ? err.message : "Couldn't load this list"));
   }, [listId]);
+
+  function toggleClaim(item: PublicItem) {
+    const next = !item.claimed;
+    setList(l => l && { ...l, items: l.items.map(i => i.id === item.id ? { ...i, claimed: next } : i) });
+    setClaimed(item.id, next).catch(() => {
+      // Revert on failure — the server didn't save it, so the UI shouldn't claim it did.
+      setList(l => l && { ...l, items: l.items.map(i => i.id === item.id ? { ...i, claimed: !next } : i) });
+    });
+  }
 
   return (
     <div className="min-h-screen" style={{ background: "#FFFFFF", backgroundImage: polkaDotBg, cursor: heartCursor }}>
@@ -42,7 +65,7 @@ export default function PublicListPage({ listId }: { listId: string }) {
             <h1 className="text-2xl font-semibold" style={{ fontFamily: "'Angelica', cursive", color: "#12002A" }}>{list.name}</h1>
           </div>
           <p className="text-sm mb-6" style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#7A5E8A" }}>
-            {list.items.length} item{list.items.length !== 1 ? "s" : ""}
+            {list.items.length} item{list.items.length !== 1 ? "s" : ""} &middot; check off what you're getting them so no one doubles up
           </p>
 
           {list.items.length === 0 ? (
@@ -50,37 +73,46 @@ export default function PublicListPage({ listId }: { listId: string }) {
           ) : (
             <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))" }}>
               {list.items.map(item => (
-                <a
+                <div
                   key={item.id}
-                  href={item.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="group relative block w-full min-w-0 rounded-2xl overflow-hidden transition-all duration-200"
-                  style={{ background: "#fff", border: "2.5px solid transparent", boxShadow: "0 2px 10px rgba(255,20,147,0.08)" }}
+                  style={{ background: "#fff", border: item.claimed ? "2.5px solid #42FAE1" : "2.5px solid transparent", boxShadow: "0 2px 10px rgba(255,20,147,0.08)", opacity: item.claimed ? 0.7 : 1 }}
                 >
-                  <div className="relative aspect-square bg-pink-50 overflow-hidden flex items-center justify-center">
-                    {item.selectedImage ? (
-                      <img src={item.selectedImage} alt={item.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
-                    ) : (
-                      <ImageOff size={28} color="#FFB6D9" />
-                    )}
-                    {item.onSale && (
-                      <div className="absolute top-2 left-2"><SaleBadge pct={item.salePercent!} /></div>
-                    )}
-                    <div className="absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all" style={{ background: "rgba(255,255,255,0.85)" }}>
-                      <ExternalLink size={12} color="#FF1493" />
-                    </div>
-                  </div>
-                  <div className="p-2.5">
-                    <p className="text-xs font-bold leading-snug line-clamp-2 mb-1" style={{ fontFamily: "'Angelica', cursive", color: "#12002A" }}>{item.title}</p>
-                    <div className="flex items-center gap-1.5">
-                      {item.price !== null && <span className="text-xs font-bold" style={{ fontFamily: "'DM Mono', monospace", color: "#FF1493" }}>{fmt(item.price)}</span>}
-                      {item.onSale && item.originalPrice && item.originalPrice !== item.price && (
-                        <span className="text-xs line-through" style={{ fontFamily: "'DM Mono', monospace", color: "#C0A0B0" }}>{fmt(item.originalPrice)}</span>
+                  <a href={item.url} target="_blank" rel="noopener noreferrer" className="block">
+                    <div className="relative aspect-square bg-pink-50 overflow-hidden flex items-center justify-center">
+                      {item.selectedImage ? (
+                        <img src={item.selectedImage} alt={item.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                      ) : (
+                        <ImageOff size={28} color="#FFB6D9" />
                       )}
+                      {item.onSale && (
+                        <div className="absolute top-2 left-2"><SaleBadge pct={item.salePercent!} /></div>
+                      )}
+                      <div className="absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all" style={{ background: "rgba(255,255,255,0.85)" }}>
+                        <ExternalLink size={12} color="#FF1493" />
+                      </div>
                     </div>
-                  </div>
-                </a>
+                    <div className="p-2.5">
+                      <p className="text-xs font-bold leading-snug line-clamp-2 mb-1" style={{ fontFamily: "'Angelica', cursive", color: "#12002A", minHeight: "2.75em" }}>{item.title}</p>
+                      <div className="flex items-center gap-1.5" style={{ minHeight: "1.375em" }}>
+                        {item.price !== null && <span className="text-xs font-bold" style={{ fontFamily: "'DM Mono', monospace", color: "#FF1493" }}>{fmt(item.price)}</span>}
+                        {item.onSale && item.originalPrice && item.originalPrice !== item.price && (
+                          <span className="text-xs line-through" style={{ fontFamily: "'DM Mono', monospace", color: "#C0A0B0" }}>{fmt(item.originalPrice)}</span>
+                        )}
+                      </div>
+                    </div>
+                  </a>
+                  <button
+                    onClick={() => toggleClaim(item)}
+                    className="absolute bottom-2.5 right-2.5 flex items-center gap-1 rounded-full pl-2 pr-2.5 py-1 text-xs font-bold transition-all"
+                    style={{ background: item.claimed ? "#42FAE1" : "#fff", color: item.claimed ? "#006B5E" : "#7A5E8A", border: "2px solid", borderColor: item.claimed ? "#42FAE1" : "#FFD6F0", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}
+                  >
+                    <span className="w-3.5 h-3.5 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: item.claimed ? "#006B5E" : "transparent", border: item.claimed ? "none" : "1.5px solid #C0A0B0" }}>
+                      {item.claimed && <Check size={9} color="#fff" />}
+                    </span>
+                    {item.claimed ? "Getting this" : "I'll get this"}
+                  </button>
+                </div>
               ))}
             </div>
           )}

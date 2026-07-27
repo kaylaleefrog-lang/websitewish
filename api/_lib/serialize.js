@@ -29,3 +29,20 @@ export function serializeList(row, items) {
     items: items.map(serializeItem),
   };
 }
+
+// Used only by the public share view: adds "claimed" (who's already
+// getting this item), which the list's own owner should never see since
+// it would spoil the surprise.
+export function serializePublicItem(row) {
+  return { ...serializeItem(row), claimed: row.claimed };
+}
+
+export function serializePublicList(row, items) {
+  return {
+    id: row.id,
+    name: row.name,
+    icon: row.icon,
+    createdAt: row.created_at,
+    items: items.map(serializePublicItem),
+  };
+}

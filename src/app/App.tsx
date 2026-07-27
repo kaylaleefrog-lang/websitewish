@@ -34,7 +34,7 @@ export interface Wishlist {
 
 interface User {
   id: string;
-  email: string;
+  email: string | null; // null means this is a guest account, not signed up yet
 }
 
 interface Notification {
@@ -78,7 +78,16 @@ async function apiFetch(path: string, options: RequestInit = {}) {
     headers: { "Content-Type": "application/json", ...(options.headers || {}) },
   });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data?.error || "Something went wrong");
+  if (!res.ok) {
+    // The server always sends a plain-string `error`, but a crashed
+    // serverless function (e.g. the platform's own error page) can return
+    // a differently-shaped body — fall back instead of stringifying an
+    // object into "[object Object]".
+    const message = typeof data?.error === "string" ? data.error
+      : typeof data?.error?.message === "string" ? data.error.message
+      : "Something went wrong";
+    throw new Error(message);
+  }
   return data;
 }
 
@@ -96,6 +105,14 @@ async function apiLogin(email: string, password: string): Promise<User> {
 }
 async function apiLogout(): Promise<void> {
   await apiFetch("/api/auth/logout", { method: "POST" });
+}
+async function apiCreateGuest(): Promise<User> {
+  const data = await apiFetch("/api/auth/guest", { method: "POST" });
+  return data.user;
+}
+async function apiClaimAccount(email: string, password: string): Promise<User> {
+  const data = await apiFetch("/api/auth/claim", { method: "POST", body: JSON.stringify({ email, password }) });
+  return data.user;
 }
 
 async function fetchLists(): Promise<Wishlist[]> {
@@ -192,8 +209,8 @@ function ItemCard({ item, onDelete, onChangePhoto, onClick, onTogglePriority, is
           </button>
         </div>
         <div className="p-2.5">
-          <p className="text-xs font-bold leading-snug line-clamp-2 mb-1" style={{ fontFamily: "'Angelica', cursive", color: "#12002A" }}>{item.title}</p>
-          <div className="flex items-center gap-1.5">
+          <p className="text-xs font-bold leading-snug line-clamp-2 mb-1" style={{ fontFamily: "'Angelica', cursive", color: "#12002A", minHeight: "2.75em" }}>{item.title}</p>
+          <div className="flex items-center gap-1.5" style={{ minHeight: "1.375em" }}>
             {item.price !== null && <span className="text-xs font-bold" style={{ fontFamily: "'DM Mono', monospace", color: "#FF1493" }}>{fmt(item.price)}</span>}
             {item.onSale && item.originalPrice && item.originalPrice !== item.price && (
               <span className="text-xs line-through" style={{ fontFamily: "'DM Mono', monospace", color: "#C0A0B0" }}>{fmt(item.originalPrice)}</span>
@@ -446,6 +463,28 @@ function ShareModal({ list, onClose }: { list: Wishlist; onClose: () => void }) 
   );
 }
 
+function SaveWishlistPrompt({ onSignUp, onClose }: { onSignUp: () => void; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
+      <div className="relative rounded-3xl p-6 max-w-sm w-full shadow-2xl text-center" style={{ background: "#fff", border: "2.5px solid #FFD6F0" }} onClick={e => e.stopPropagation()}>
+        <button onClick={onClose} className="absolute top-4 right-4 w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "#FFE8F5" }}><X size={14} color="#FF1493" /></button>
+        <img src={heartsLogo} alt="" width={56} className="select-none mx-auto mb-3" draggable={false} />
+        <h3 className="text-xl font-semibold mb-2" style={{ fontFamily: "'Angelica', cursive", color: "#FF1493" }}>Save your wishlist now by signing up!</h3>
+        <p className="text-sm mb-5" style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#7A5E8A" }}>
+          Without an account, this wishlist only lives in this browser. Sign up so you never lose it.
+        </p>
+        <button onClick={onSignUp} className="w-full rounded-2xl py-3 text-sm font-bold mb-2" style={{ background: "linear-gradient(135deg, #FF1493, #FF69B4)", color: "#fff", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
+          Sign up
+        </button>
+        <button onClick={onClose} className="w-full text-center text-xs font-bold py-1" style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#C0A0B0" }}>
+          Maybe later
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function NotificationsPanel({ notifications, onMarkRead, onClose }: { notifications: Notification[]; onMarkRead: (id: string) => void; onClose: () => void }) {
   const unread = notifications.filter(n => !n.read);
   return (
@@ -487,8 +526,10 @@ function LoadingScreen() {
   );
 }
 
-function AuthScreen({ onAuthed }: { onAuthed: (user: User) => void }) {
-  const [mode, setMode] = useState<"login" | "signup">("login");
+function AuthScreen({ onAuthed, onClose, initialMode = "login", claiming = false }: {
+  onAuthed: (user: User) => void; onClose?: () => void; initialMode?: "login" | "signup"; claiming?: boolean;
+}) {
+  const [mode, setMode] = useState<"login" | "signup">(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -500,7 +541,9 @@ function AuthScreen({ onAuthed }: { onAuthed: (user: User) => void }) {
     setLoading(true);
     setError(null);
     try {
-      const user = mode === "login" ? await apiLogin(email.trim(), password) : await apiSignup(email.trim(), password);
+      const user = mode === "login" ? await apiLogin(email.trim(), password)
+        : claiming ? await apiClaimAccount(email.trim(), password)
+        : await apiSignup(email.trim(), password);
       onAuthed(user);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -509,48 +552,66 @@ function AuthScreen({ onAuthed }: { onAuthed: (user: User) => void }) {
     }
   }
 
-  return (
-    <div className="min-h-screen flex items-center justify-center p-3 md:p-6" style={{ background: "#FFFFFF", backgroundImage: polkaDotBg, cursor: heartCursor }}>
-      <div className="w-full max-w-sm rounded-[2rem] shadow-2xl p-8" style={{ background: "#FFE8F5", border: "3px solid #fff" }}>
-        <div className="flex flex-col items-center mb-6">
-          <img src={heartsLogo} alt="" width={64} className="select-none mb-2" draggable={false} />
-          <h1 className="text-2xl font-semibold" style={{ fontFamily: "'Angelica', cursive", color: "#FF1493" }}>Wishly</h1>
-          <p className="text-sm mt-1" style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#7A5E8A" }}>
-            {mode === "login" ? "Welcome back!" : "Create your account"}
-          </p>
-        </div>
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <input
-            type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" autoFocus
-            className="w-full rounded-2xl px-4 py-3 text-sm focus:outline-none"
-            style={{ background: "#fff", border: "2px solid #FFD6F0", fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#12002A" }}
-          />
-          <input
-            type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Password"
-            className="w-full rounded-2xl px-4 py-3 text-sm focus:outline-none"
-            style={{ background: "#fff", border: "2px solid #FFD6F0", fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#12002A" }}
-          />
-          {error && (
-            <div className="flex items-center gap-2 rounded-2xl p-3 text-xs font-bold" style={{ background: "#FFEAF0", color: "#D6003F", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
-              <AlertCircle size={14} />{error}
-            </div>
-          )}
-          <button
-            type="submit" disabled={loading || !email.trim() || !password}
-            className="w-full rounded-2xl py-3 text-sm font-bold flex items-center justify-center gap-2 transition-opacity disabled:opacity-40"
-            style={{ background: "linear-gradient(135deg, #FF1493, #FF69B4)", color: "#fff", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}
-          >
-            {loading ? <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : mode === "login" ? "Log in" : "Sign up"}
-          </button>
-        </form>
-        <button
-          onClick={() => { setMode(m => m === "login" ? "signup" : "login"); setError(null); }}
-          className="w-full text-center text-xs font-bold mt-4"
-          style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#FF1493" }}
-        >
-          {mode === "login" ? "Need an account? Sign up" : "Already have an account? Log in"}
+  const content = (
+    <div className="w-full max-w-sm rounded-[2rem] shadow-2xl p-8 relative" style={{ background: "#FFE8F5", border: "3px solid #fff" }} onClick={e => e.stopPropagation()}>
+      {onClose && (
+        <button onClick={onClose} className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center" style={{ background: "#fff" }}>
+          <X size={15} color="#FF1493" />
         </button>
+      )}
+      <div className="flex flex-col items-center mb-6">
+        <img src={heartsLogo} alt="" width={64} className="select-none mb-2" draggable={false} />
+        <h1 className="text-2xl font-semibold" style={{ fontFamily: "'Angelica', cursive", color: "#FF1493" }}>Wishly</h1>
+        <p className="text-sm mt-1 text-center" style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#7A5E8A" }}>
+          {mode === "login" ? "Welcome back!" : claiming ? "Save your wishlist by creating a password" : "Create your account"}
+        </p>
       </div>
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <input
+          type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" autoFocus
+          className="w-full rounded-2xl px-4 py-3 text-sm focus:outline-none"
+          style={{ background: "#fff", border: "2px solid #FFD6F0", fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#12002A" }}
+        />
+        <input
+          type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Password"
+          className="w-full rounded-2xl px-4 py-3 text-sm focus:outline-none"
+          style={{ background: "#fff", border: "2px solid #FFD6F0", fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#12002A" }}
+        />
+        {error && (
+          <div className="flex items-center gap-2 rounded-2xl p-3 text-xs font-bold" style={{ background: "#FFEAF0", color: "#D6003F", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
+            <AlertCircle size={14} />{error}
+          </div>
+        )}
+        <button
+          type="submit" disabled={loading || !email.trim() || !password}
+          className="w-full rounded-2xl py-3 text-sm font-bold flex items-center justify-center gap-2 transition-opacity disabled:opacity-40"
+          style={{ background: "linear-gradient(135deg, #FF1493, #FF69B4)", color: "#fff", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}
+        >
+          {loading ? <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : mode === "login" ? "Log in" : "Sign up"}
+        </button>
+      </form>
+      <button
+        onClick={() => { setMode(m => m === "login" ? "signup" : "login"); setError(null); }}
+        className="w-full text-center text-xs font-bold mt-4"
+        style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#FF1493" }}
+      >
+        {mode === "login" ? "Need an account? Sign up" : "Already have an account? Log in"}
+      </button>
+    </div>
+  );
+
+  if (!onClose) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-3 md:p-6" style={{ background: "#FFFFFF", backgroundImage: polkaDotBg, cursor: heartCursor }}>
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
+      {content}
     </div>
   );
 }
@@ -576,6 +637,8 @@ export default function App() {
   const [showPhotoPicker, setShowPhotoPicker] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [sortBy, setSortBy] = useState<"default" | "priority" | "price-asc" | "price-desc">("default");
+  const [showAuthOverlay, setShowAuthOverlay] = useState<false | "login" | "signup">(false);
+  const [showSaveNag, setShowSaveNag] = useState(false);
 
   useEffect(() => {
     fetchMe().then(setUser).catch(() => setUser(null)).finally(() => setAuthChecked(true));
@@ -604,7 +667,6 @@ export default function App() {
   const unreadCount = notifications.filter(n => !n.read).length;
 
   if (!authChecked || listsLoading) return <LoadingScreen />;
-  if (!user) return <AuthScreen onAuthed={setUser} />;
 
   const sortedItems = activeList ? [...activeList.items].sort((a, b) => {
     if (sortBy === "priority") return Number(b.priority) - Number(a.priority);
@@ -655,9 +717,17 @@ export default function App() {
   async function createList() {
     if (!newListName.trim()) return;
     try {
+      // First-time (not-logged-in) visitors get a real account created
+      // behind the scenes so they can start building a list right away —
+      // setUser happens only after the list exists server-side, so the
+      // lists-loading effect that setUser triggers can't race past it.
+      const wasGuestless = !user;
+      const activeUser = user ?? await apiCreateGuest();
       const nl = await apiCreateList(newListName.trim(), newListIcon);
+      if (wasGuestless) setUser(activeUser);
       setLists(ls => [...ls, nl]); setActiveListId(nl.id); setSelectedItemId(null);
       setNewListName(""); setNewListIcon("star"); setShowNewList(false);
+      if (wasGuestless) setShowSaveNag(true);
     } catch (err) {
       setActionError(err instanceof Error ? err.message : "Couldn't create that list");
     }
@@ -715,9 +785,19 @@ export default function App() {
                 </div>
               </>
             )}
-            <button onClick={handleLogout} title={`Log out (${user.email})`} className="w-9 h-9 rounded-full flex items-center justify-center transition-all" style={{ background: "#FFF5FD", border: "2px solid #FFD6F0" }}>
-              <LogOut size={15} color="#FF1493" />
-            </button>
+            {user?.email ? (
+              <button onClick={handleLogout} title={`Log out (${user.email})`} className="w-9 h-9 rounded-full flex items-center justify-center transition-all" style={{ background: "#FFF5FD", border: "2px solid #FFD6F0" }}>
+                <LogOut size={15} color="#FF1493" />
+              </button>
+            ) : user ? (
+              <button onClick={() => setShowAuthOverlay("signup")} className="rounded-2xl px-4 py-2 text-sm font-bold transition-all" style={{ background: "linear-gradient(135deg, #FF1493, #FF69B4)", color: "#fff", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
+                Sign up
+              </button>
+            ) : (
+              <button onClick={() => setShowAuthOverlay("login")} className="rounded-2xl px-4 py-2 text-sm font-bold transition-all" style={{ background: "#fff", border: "2px solid #FFD6F0", color: "#FF1493", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
+                Log in
+              </button>
+            )}
           </div>
         </div>
 
@@ -1000,6 +1080,20 @@ export default function App() {
           selected={selectedItem.selectedImage}
           onSelect={img => changePhoto(selectedItem.id, img)}
           onClose={() => setShowPhotoPicker(false)}
+        />
+      )}
+      {showSaveNag && (
+        <SaveWishlistPrompt
+          onSignUp={() => { setShowSaveNag(false); setShowAuthOverlay("signup"); }}
+          onClose={() => setShowSaveNag(false)}
+        />
+      )}
+      {showAuthOverlay && (
+        <AuthScreen
+          onAuthed={u => { setUser(u); setShowAuthOverlay(false); }}
+          onClose={() => setShowAuthOverlay(false)}
+          initialMode={showAuthOverlay}
+          claiming={!!user && !user.email}
         />
       )}
     </div>

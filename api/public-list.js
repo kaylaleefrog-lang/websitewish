@@ -1,5 +1,5 @@
 import { sql } from "./_lib/db.js";
-import { serializeList } from "./_lib/serialize.js";
+import { serializePublicList } from "./_lib/serialize.js";
 
 // Unauthenticated by design: this powers the "Share" link, which lets anyone
 // with the URL view a list. List ids are random UUIDs, so the link itself is
@@ -18,5 +18,5 @@ export default async function handler(req, res) {
   }
 
   const items = await sql`SELECT * FROM items WHERE wishlist_id = ${id} ORDER BY added_at DESC`;
-  res.status(200).json({ list: serializeList(rows[0], items) });
+  res.status(200).json({ list: serializePublicList(rows[0], items) });
 }
