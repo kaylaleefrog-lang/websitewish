@@ -99,7 +99,7 @@ function ItemCard({ item, onDelete, onChangePhoto, onClick, isSelected }: {
   return (
     <button
       onClick={onClick}
-      className="group relative text-left w-full transition-all duration-200"
+      className="group relative text-left w-full min-w-0 transition-all duration-200"
       style={{ outline: "none" }}
     >
       <div
@@ -554,7 +554,7 @@ export default function App() {
             </div>
 
             {/* Item grid */}
-            <div className="flex-1 overflow-y-auto px-4 pb-4">
+            <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-4 pb-4">
               {activeList?.items.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-40 text-center">
                   <p className="text-sm font-bold mb-2" style={{ fontFamily: "'Angelica', cursive", color: "#FF1493" }}>Nothing here yet!</p>
