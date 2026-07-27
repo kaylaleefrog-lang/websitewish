@@ -157,16 +157,30 @@ export function parseProductFromHtml(html, baseUrl) {
     .filter(Boolean);
   const images = [...new Set(imageCandidates)].slice(0, 6);
 
+  // Price resolution, most-authoritative-signal-first. JSON-LD's plain
+  // offers.price is often the *undiscounted* price even when the page has a
+  // live sale (e.g. Cafe24 stores put the base price in JSON-LD but the
+  // actual current price only in a product:sale_price:amount meta tag), so
+  // an explicit sale-price meta tag has to outrank a plain JSON-LD price
+  // rather than only being consulted when JSON-LD has nothing at all.
   const jsonLdPricing = extractPricing(product?.offers);
-  const price =
-    jsonLdPricing.price ??
-    parseMoney(meta["product:sale_price:amount"]) ??
-    parseMoney(meta["product:price:amount"]) ??
-    parseMoney(meta["og:price:amount"]);
-  let originalPrice =
-    jsonLdPricing.originalPrice ??
-    parseMoney(meta["product:original_price:amount"]) ??
-    (meta["product:sale_price:amount"] ? parseMoney(meta["product:price:amount"]) : null);
+  const metaPrice = parseMoney(meta["product:price:amount"]);
+  const metaSalePrice = parseMoney(meta["product:sale_price:amount"]);
+  const ogPrice = parseMoney(meta["og:price:amount"]);
+  const metaOriginalPrice = parseMoney(meta["product:original_price:amount"]);
+
+  let price;
+  let originalPrice;
+  if (metaSalePrice != null) {
+    price = metaSalePrice;
+    originalPrice = metaOriginalPrice ?? metaPrice ?? jsonLdPricing.price ?? jsonLdPricing.originalPrice ?? null;
+  } else if (jsonLdPricing.originalPrice != null) {
+    price = jsonLdPricing.price;
+    originalPrice = jsonLdPricing.originalPrice;
+  } else {
+    price = jsonLdPricing.price ?? metaPrice ?? ogPrice;
+    originalPrice = metaOriginalPrice ?? null;
+  }
   if (originalPrice != null && price != null && originalPrice <= price) originalPrice = null;
 
   const store = meta["og:site_name"] || (() => {
