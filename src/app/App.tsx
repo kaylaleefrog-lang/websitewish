@@ -424,22 +424,43 @@ export default function App() {
             <div className="px-4 pt-4 pb-2 flex-shrink-0">
               <div className="flex items-center gap-1.5 mb-3 flex-wrap">
                 {lists.map(list => (
-                  <button
-                    key={list.id}
-                    onClick={() => { setActiveListId(list.id); setSelectedItemId(list.items[0]?.id ?? null); }}
-                    className="flex items-center gap-1.5 rounded-2xl px-3 py-1.5 text-xs font-bold transition-all"
-                    style={{
-                      background: activeListId === list.id ? "#FF1493" : "#fff",
-                      color: activeListId === list.id ? "#fff" : "#FF1493",
-                      fontFamily: "'ZT Bros Oskon 90s', sans-serif",
-                      border: "2px solid",
-                      borderColor: activeListId === list.id ? "#FF1493" : "#FFD6F0",
-                    }}
-                  >
-                    <ListIcon value={list.icon} size={12} />
-                    <span className="max-w-[80px] truncate">{list.name}</span>
-                    <span className="text-xs rounded-full px-1" style={{ background: activeListId === list.id ? "rgba(255,255,255,0.3)" : "#FFE8F5", fontFamily: "'DM Mono', monospace" }}>{list.items.length}</span>
-                  </button>
+                  editingListId === list.id ? (
+                    <input
+                      key={list.id}
+                      value={editingName}
+                      onChange={e => setEditingName(e.target.value)}
+                      onKeyDown={e => { if (e.key === "Enter") saveRename(); if (e.key === "Escape") setEditingListId(null); }}
+                      onBlur={saveRename}
+                      className="rounded-2xl px-3 py-1.5 text-xs font-bold focus:outline-none"
+                      style={{ width: 120, background: "#fff", border: "2px solid #FF1493", color: "#12002A", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}
+                      autoFocus
+                    />
+                  ) : (
+                    <button
+                      key={list.id}
+                      onClick={() => { setActiveListId(list.id); setSelectedItemId(list.items[0]?.id ?? null); }}
+                      onContextMenu={e => {
+                        e.preventDefault();
+                        setActiveListId(list.id);
+                        setSelectedItemId(list.items[0]?.id ?? null);
+                        setEditingListId(list.id);
+                        setEditingName(list.name);
+                      }}
+                      title="Two-finger click to rename"
+                      className="flex items-center gap-1.5 rounded-2xl px-3 py-1.5 text-xs font-bold transition-all"
+                      style={{
+                        background: activeListId === list.id ? "#FF1493" : "#fff",
+                        color: activeListId === list.id ? "#fff" : "#FF1493",
+                        fontFamily: "'ZT Bros Oskon 90s', sans-serif",
+                        border: "2px solid",
+                        borderColor: activeListId === list.id ? "#FF1493" : "#FFD6F0",
+                      }}
+                    >
+                      <ListIcon value={list.icon} size={12} />
+                      <span className="max-w-[80px] truncate">{list.name}</span>
+                      <span className="text-xs rounded-full px-1" style={{ background: activeListId === list.id ? "rgba(255,255,255,0.3)" : "#FFE8F5", fontFamily: "'DM Mono', monospace" }}>{list.items.length}</span>
+                    </button>
+                  )
                 ))}
                 <button
                   onClick={() => setShowNewList(!showNewList)}
@@ -469,12 +490,6 @@ export default function App() {
                 </div>
               )}
 
-              {/* Edit / delete active list */}
-              {editingListId === activeListId ? (
-                <div className="flex gap-1.5 mb-2">
-                  <input value={editingName} onChange={e => setEditingName(e.target.value)} onKeyDown={e => { if (e.key === "Enter") saveRename(); if (e.key === "Escape") setEditingListId(null); }} onBlur={saveRename} className="flex-1 rounded-xl px-2.5 py-1 text-xs focus:outline-none" style={{ background: "#fff", border: "2px solid #FF1493", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }} autoFocus />
-                </div>
-              ) : null}
             </div>
 
             {/* Item grid */}
