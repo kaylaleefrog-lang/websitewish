@@ -123,7 +123,7 @@ function ItemCard({ item, onDelete, onChangePhoto, onClick, isSelected }: {
           )}
         </div>
         <div className="p-2.5">
-          <p className="text-xs font-bold leading-snug line-clamp-2 mb-1" style={{ fontFamily: "'Fredoka', sans-serif", color: "#12002A" }}>{item.title}</p>
+          <p className="text-xs font-bold leading-snug line-clamp-2 mb-1" style={{ fontFamily: "'Crazy Curlz', cursive", color: "#12002A" }}>{item.title}</p>
           <div className="flex items-center gap-1.5">
             {item.price !== null && <span className="text-xs font-bold" style={{ fontFamily: "'DM Mono', monospace", color: "#FF1493" }}>{fmt(item.price)}</span>}
             {item.onSale && item.originalPrice && item.originalPrice !== item.price && (
@@ -154,7 +154,7 @@ function PhotoPickerModal({ images, selected, onSelect, onClose }: {
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
       <div className="relative rounded-3xl border-2 p-6 max-w-xs w-full shadow-2xl" style={{ background: "#fff", borderColor: "#FF1493" }} onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
-          <h4 className="text-lg font-semibold" style={{ fontFamily: "'Fredoka', sans-serif", color: "#FF1493" }}>Pick a photo</h4>
+          <h4 className="text-lg font-semibold" style={{ fontFamily: "'Crazy Curlz', cursive", color: "#FF1493" }}>Pick a photo</h4>
           <button onClick={onClose} className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "#FFE8F5" }}><X size={14} /></button>
         </div>
         <div className="grid grid-cols-2 gap-3">
@@ -196,8 +196,8 @@ function AddItemModal({ onClose, onAdd }: { onClose: () => void; onAdd: (item: W
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5" style={{ background: "linear-gradient(135deg, #FFE8F5 0%, #E8FDF9 100%)" }}>
           <div>
-            <h2 className="text-xl font-semibold" style={{ fontFamily: "'Fredoka', sans-serif", color: "#FF1493" }}>Add to wishlist</h2>
-            <p className="text-xs mt-0.5" style={{ fontFamily: "'Nunito', sans-serif", color: "#7A5E8A" }}>
+            <h2 className="text-xl font-semibold" style={{ fontFamily: "'Crazy Curlz', cursive", color: "#FF1493" }}>Add to wishlist</h2>
+            <p className="text-xs mt-0.5" style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#7A5E8A" }}>
               {step === "url" ? "Paste a product link to get started" : "Now pick your fave photo!"}
             </p>
           </div>
@@ -211,16 +211,16 @@ function AddItemModal({ onClose, onAdd }: { onClose: () => void; onAdd: (item: W
                 type="url" value={url} onChange={e => setUrl(e.target.value)} onKeyDown={e => e.key === "Enter" && handleFetch()}
                 placeholder="https://www.example.com/product/..."
                 className="w-full rounded-2xl px-4 py-3 text-sm focus:outline-none"
-                style={{ background: "#FDF5FF", border: "2px solid #FFD6F0", fontFamily: "'Nunito', sans-serif", color: "#12002A" }}
+                style={{ background: "#FDF5FF", border: "2px solid #FFD6F0", fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#12002A" }}
                 autoFocus
               />
-              <p className="text-xs" style={{ fontFamily: "'Nunito', sans-serif", color: "#C0A0B0" }}>
+              <p className="text-xs" style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#C0A0B0" }}>
                 Try: amazon.com, etsy.com, nordstrom.com, urbanoutfitters.com
               </p>
               <button
                 onClick={handleFetch} disabled={!url.trim() || loading}
                 className="w-full rounded-2xl py-3 text-sm font-bold flex items-center justify-center gap-2 transition-opacity disabled:opacity-40"
-                style={{ background: "linear-gradient(135deg, #FF1493, #FF69B4)", color: "#fff", fontFamily: "'Nunito', sans-serif" }}
+                style={{ background: "linear-gradient(135deg, #FF1493, #FF69B4)", color: "#fff", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}
               >
                 {loading ? <><div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />Fetching...</> : <><Sparkles size={15} />Fetch details</>}
               </button>
@@ -230,7 +230,7 @@ function AddItemModal({ onClose, onAdd }: { onClose: () => void; onAdd: (item: W
               <div className="flex gap-3 p-3 rounded-2xl" style={{ background: "#FFF5FD" }}>
                 <img src={selectedImg} alt={scraped.title} className="w-16 h-16 object-cover rounded-xl flex-shrink-0" style={{ border: "2px solid #FFD6F0" }} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold line-clamp-2" style={{ fontFamily: "'Fredoka', sans-serif", color: "#12002A" }}>{scraped.title}</p>
+                  <p className="text-sm font-bold line-clamp-2" style={{ fontFamily: "'Crazy Curlz', cursive", color: "#12002A" }}>{scraped.title}</p>
                   <div className="flex items-center gap-2 mt-1">
                     {scraped.price && <span className="text-sm font-bold" style={{ fontFamily: "'DM Mono', monospace", color: "#FF1493" }}>{fmt(scraped.price)}</span>}
                     {scraped.onSale && scraped.originalPrice && scraped.originalPrice !== scraped.price && <span className="text-xs line-through" style={{ fontFamily: "'DM Mono', monospace", color: "#C0A0B0" }}>{fmt(scraped.originalPrice)}</span>}
@@ -239,7 +239,7 @@ function AddItemModal({ onClose, onAdd }: { onClose: () => void; onAdd: (item: W
                 </div>
               </div>
               <div>
-                <p className="text-xs font-bold mb-2" style={{ fontFamily: "'Nunito', sans-serif", color: "#7A5E8A" }}>Choose a photo</p>
+                <p className="text-xs font-bold mb-2" style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#7A5E8A" }}>Choose a photo</p>
                 <div className="grid grid-cols-4 gap-2">
                   {scraped.availableImages.map((img, i) => (
                     <button key={i} onClick={() => setSelectedImg(img)} className="relative aspect-square rounded-xl overflow-hidden transition-all"
@@ -254,11 +254,11 @@ function AddItemModal({ onClose, onAdd }: { onClose: () => void; onAdd: (item: W
                 <div onClick={() => setNotifyOnSale(!notifyOnSale)} className="relative w-10 h-5 rounded-full transition-colors duration-200 cursor-pointer flex-shrink-0" style={{ background: notifyOnSale ? "#FF1493" : "#E8C8F0" }}>
                   <div className="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200" style={{ transform: notifyOnSale ? "translateX(20px)" : "translateX(0)" }} />
                 </div>
-                <span className="text-sm font-bold" style={{ fontFamily: "'Nunito', sans-serif", color: "#12002A" }}>Notify me when price drops</span>
+                <span className="text-sm font-bold" style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#12002A" }}>Notify me when price drops</span>
               </label>
               <div className="flex gap-2">
-                <button onClick={() => setStep("url")} className="flex-1 rounded-2xl py-2.5 text-sm font-bold transition-colors" style={{ border: "2px solid #FFD6F0", fontFamily: "'Nunito', sans-serif", color: "#FF1493", background: "#fff" }}>Back</button>
-                <button onClick={() => { if (!scraped) return; onAdd({ ...scraped, id: uid(), selectedImage: selectedImg, addedAt: new Date(), notifyOnSale }); onClose(); }} className="flex-[2] rounded-2xl py-2.5 text-sm font-bold flex items-center justify-center gap-2" style={{ background: "linear-gradient(135deg, #FF1493, #FF69B4)", color: "#fff", fontFamily: "'Nunito', sans-serif" }}>
+                <button onClick={() => setStep("url")} className="flex-1 rounded-2xl py-2.5 text-sm font-bold transition-colors" style={{ border: "2px solid #FFD6F0", fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#FF1493", background: "#fff" }}>Back</button>
+                <button onClick={() => { if (!scraped) return; onAdd({ ...scraped, id: uid(), selectedImage: selectedImg, addedAt: new Date(), notifyOnSale }); onClose(); }} className="flex-[2] rounded-2xl py-2.5 text-sm font-bold flex items-center justify-center gap-2" style={{ background: "linear-gradient(135deg, #FF1493, #FF69B4)", color: "#fff", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
                   <Heart size={14} fill="#fff" />Add to wishlist
                 </button>
               </div>
@@ -279,23 +279,23 @@ function ShareModal({ list, onClose }: { list: Wishlist; onClose: () => void }) 
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
       <div className="relative rounded-3xl p-6 max-w-sm w-full shadow-2xl" style={{ background: "#fff", border: "2.5px solid #FFD6F0" }} onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-5">
-          <h3 className="text-xl font-semibold" style={{ fontFamily: "'Fredoka', sans-serif", color: "#FF1493" }}>Share this list</h3>
+          <h3 className="text-xl font-semibold" style={{ fontFamily: "'Crazy Curlz', cursive", color: "#FF1493" }}>Share this list</h3>
           <button onClick={onClose} className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "#FFE8F5" }}><X size={14} color="#FF1493" /></button>
         </div>
         <div className="text-center mb-5">
           <div className="w-14 h-14 rounded-2xl mx-auto mb-3 flex items-center justify-center" style={{ background: "linear-gradient(135deg, #FFE8F5, #E8FDF9)" }}>
             <span className="text-pink-500"><ListIcon value={list.icon} size={24} /></span>
           </div>
-          <p className="text-lg font-semibold" style={{ fontFamily: "'Fredoka', sans-serif", color: "#12002A" }}>{list.name}</p>
-          <p className="text-sm" style={{ fontFamily: "'Nunito', sans-serif", color: "#7A5E8A" }}>{list.items.length} item{list.items.length !== 1 ? "s" : ""}</p>
+          <p className="text-lg font-semibold" style={{ fontFamily: "'Crazy Curlz', cursive", color: "#12002A" }}>{list.name}</p>
+          <p className="text-sm" style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#7A5E8A" }}>{list.items.length} item{list.items.length !== 1 ? "s" : ""}</p>
         </div>
         <div className="flex gap-2 mb-3">
           <input readOnly value={shareUrl} className="flex-1 rounded-xl px-3 py-2 text-xs focus:outline-none" style={{ background: "#FDF5FF", border: "2px solid #FFD6F0", fontFamily: "'DM Mono', monospace", color: "#7A5E8A" }} />
-          <button onClick={copy} className="px-4 rounded-xl text-sm font-bold flex items-center gap-1.5 transition-all" style={{ background: copied ? "#42FAE1" : "#FF1493", color: copied ? "#006B5E" : "#fff", fontFamily: "'Nunito', sans-serif" }}>
+          <button onClick={copy} className="px-4 rounded-xl text-sm font-bold flex items-center gap-1.5 transition-all" style={{ background: copied ? "#42FAE1" : "#FF1493", color: copied ? "#006B5E" : "#fff", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
             {copied ? <><Check size={14} />Copied!</> : <><Copy size={14} />Copy</>}
           </button>
         </div>
-        <p className="text-xs text-center" style={{ fontFamily: "'Nunito', sans-serif", color: "#C0A0B0" }}>Anyone with this link can view your wishlist</p>
+        <p className="text-xs text-center" style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#C0A0B0" }}>Anyone with this link can view your wishlist</p>
       </div>
     </div>
   );
@@ -306,19 +306,19 @@ function NotificationsPanel({ notifications, onMarkRead, onClose }: { notificati
   return (
     <div className="absolute top-12 right-0 z-40 w-80 rounded-3xl shadow-2xl overflow-hidden" style={{ background: "#fff", border: "2.5px solid #FFD6F0" }} onClick={e => e.stopPropagation()}>
       <div className="px-4 py-3 flex items-center justify-between" style={{ background: "linear-gradient(135deg, #FFE8F5, #E8FDF9)" }}>
-        <h4 className="font-semibold" style={{ fontFamily: "'Fredoka', sans-serif", color: "#FF1493" }}>Price alerts</h4>
+        <h4 className="font-semibold" style={{ fontFamily: "'Crazy Curlz', cursive", color: "#FF1493" }}>Price alerts</h4>
         {unread.length > 0 && <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: "#FF1493", color: "#fff", fontFamily: "'DM Mono', monospace" }}>{unread.length} new</span>}
       </div>
       <div className="max-h-72 overflow-y-auto">
         {notifications.length === 0 ? (
-          <div className="py-8 text-center text-sm" style={{ fontFamily: "'Nunito', sans-serif", color: "#C0A0B0" }}>No alerts yet!</div>
+          <div className="py-8 text-center text-sm" style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#C0A0B0" }}>No alerts yet!</div>
         ) : notifications.map(n => (
           <div key={n.id} onClick={() => onMarkRead(n.id)} className="px-4 py-3 border-b cursor-pointer hover:bg-pink-50 transition-colors" style={{ borderColor: "#FFE8F5" }}>
             <div className="flex items-start gap-2">
               {!n.read && <div className="w-2 h-2 rounded-full mt-1.5 flex-shrink-0" style={{ background: "#FF1493" }} />}
               <div className={!n.read ? "" : "pl-4"}>
-                <p className="text-sm font-bold line-clamp-1" style={{ fontFamily: "'Nunito', sans-serif", color: "#12002A" }}>{n.itemTitle}</p>
-                <p className="text-xs mt-0.5" style={{ fontFamily: "'Nunito', sans-serif", color: "#7A5E8A" }}>in <span className="font-bold">{n.listName}</span></p>
+                <p className="text-sm font-bold line-clamp-1" style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#12002A" }}>{n.itemTitle}</p>
+                <p className="text-xs mt-0.5" style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#7A5E8A" }}>in <span className="font-bold">{n.listName}</span></p>
                 <div className="flex items-center gap-2 mt-1">
                   <span className="text-sm font-bold" style={{ fontFamily: "'DM Mono', monospace", color: "#FF1493" }}>{fmt(n.newPrice)}</span>
                   <span className="text-xs line-through" style={{ fontFamily: "'DM Mono', monospace", color: "#C0A0B0" }}>{fmt(n.oldPrice)}</span>
@@ -329,7 +329,7 @@ function NotificationsPanel({ notifications, onMarkRead, onClose }: { notificati
           </div>
         ))}
       </div>
-      <button onClick={onClose} className="w-full py-2.5 text-xs font-bold transition-colors" style={{ fontFamily: "'Nunito', sans-serif", color: "#FF1493", borderTop: "2px solid #FFE8F5" }}>Close</button>
+      <button onClick={onClose} className="w-full py-2.5 text-xs font-bold transition-colors" style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#FF1493", borderTop: "2px solid #FFE8F5" }}>Close</button>
     </div>
   );
 }
@@ -395,10 +395,10 @@ export default function App() {
         <div className="flex items-center justify-between px-6 py-4 flex-shrink-0" style={{ background: "#fff" }}>
           <div className="flex items-center gap-2">
             <Heart size={20} fill="#FF1493" color="#FF1493" />
-            <span className="text-2xl font-semibold" style={{ fontFamily: "'Fredoka', sans-serif", color: "#FF1493", letterSpacing: "0.02em" }}>Wishly</span>
+            <span className="text-2xl font-semibold" style={{ fontFamily: "'Crazy Curlz', cursive", color: "#FF1493", letterSpacing: "0.02em" }}>Wishly</span>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={() => setShowShare(true)} className="flex items-center gap-1.5 rounded-2xl px-4 py-2 text-sm font-bold transition-all" style={{ background: "#fff", border: "2px solid #FFD6F0", color: "#FF1493", fontFamily: "'Nunito', sans-serif" }}>
+            <button onClick={() => setShowShare(true)} className="flex items-center gap-1.5 rounded-2xl px-4 py-2 text-sm font-bold transition-all" style={{ background: "#fff", border: "2px solid #FFD6F0", color: "#FF1493", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
               <Share2 size={14} /> Share
             </button>
             <div className="relative">
@@ -431,7 +431,7 @@ export default function App() {
                     style={{
                       background: activeListId === list.id ? "#FF1493" : "#fff",
                       color: activeListId === list.id ? "#fff" : "#FF1493",
-                      fontFamily: "'Nunito', sans-serif",
+                      fontFamily: "'ZT Bros Oskon 90s', sans-serif",
                       border: "2px solid",
                       borderColor: activeListId === list.id ? "#FF1493" : "#FFD6F0",
                     }}
@@ -461,10 +461,10 @@ export default function App() {
                       </button>
                     ))}
                   </div>
-                  <input value={newListName} onChange={e => setNewListName(e.target.value)} onKeyDown={e => { if (e.key === "Enter") createList(); if (e.key === "Escape") setShowNewList(false); }} placeholder="List name..." className="w-full rounded-xl px-2.5 py-1.5 text-xs focus:outline-none mb-2" style={{ background: "#FDF5FF", border: "2px solid #FFD6F0", fontFamily: "'Nunito', sans-serif" }} autoFocus />
+                  <input value={newListName} onChange={e => setNewListName(e.target.value)} onKeyDown={e => { if (e.key === "Enter") createList(); if (e.key === "Escape") setShowNewList(false); }} placeholder="List name..." className="w-full rounded-xl px-2.5 py-1.5 text-xs focus:outline-none mb-2" style={{ background: "#FDF5FF", border: "2px solid #FFD6F0", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }} autoFocus />
                   <div className="flex gap-1.5">
-                    <button onClick={createList} className="flex-1 rounded-xl py-1.5 text-xs font-bold" style={{ background: "#FF1493", color: "#fff", fontFamily: "'Nunito', sans-serif" }}>Create</button>
-                    <button onClick={() => setShowNewList(false)} className="flex-1 rounded-xl py-1.5 text-xs font-bold" style={{ border: "2px solid #FFD6F0", color: "#FF1493", background: "#fff", fontFamily: "'Nunito', sans-serif" }}>Cancel</button>
+                    <button onClick={createList} className="flex-1 rounded-xl py-1.5 text-xs font-bold" style={{ background: "#FF1493", color: "#fff", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>Create</button>
+                    <button onClick={() => setShowNewList(false)} className="flex-1 rounded-xl py-1.5 text-xs font-bold" style={{ border: "2px solid #FFD6F0", color: "#FF1493", background: "#fff", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>Cancel</button>
                   </div>
                 </div>
               )}
@@ -472,7 +472,7 @@ export default function App() {
               {/* Edit / delete active list */}
               {editingListId === activeListId ? (
                 <div className="flex gap-1.5 mb-2">
-                  <input value={editingName} onChange={e => setEditingName(e.target.value)} onKeyDown={e => { if (e.key === "Enter") saveRename(); if (e.key === "Escape") setEditingListId(null); }} onBlur={saveRename} className="flex-1 rounded-xl px-2.5 py-1 text-xs focus:outline-none" style={{ background: "#fff", border: "2px solid #FF1493", fontFamily: "'Nunito', sans-serif" }} autoFocus />
+                  <input value={editingName} onChange={e => setEditingName(e.target.value)} onKeyDown={e => { if (e.key === "Enter") saveRename(); if (e.key === "Escape") setEditingListId(null); }} onBlur={saveRename} className="flex-1 rounded-xl px-2.5 py-1 text-xs focus:outline-none" style={{ background: "#fff", border: "2px solid #FF1493", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }} autoFocus />
                 </div>
               ) : null}
             </div>
@@ -481,9 +481,9 @@ export default function App() {
             <div className="flex-1 overflow-y-auto px-4 pb-4">
               {activeList?.items.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-40 text-center">
-                  <p className="text-sm font-bold mb-2" style={{ fontFamily: "'Fredoka', sans-serif", color: "#FF1493" }}>Nothing here yet!</p>
-                  <p className="text-xs mb-3" style={{ fontFamily: "'Nunito', sans-serif", color: "#C0A0B0" }}>Add your first item</p>
-                  <button onClick={() => setShowAddItem(true)} className="rounded-2xl px-4 py-2 text-xs font-bold" style={{ background: "#FF1493", color: "#fff", fontFamily: "'Nunito', sans-serif" }}>
+                  <p className="text-sm font-bold mb-2" style={{ fontFamily: "'Crazy Curlz', cursive", color: "#FF1493" }}>Nothing here yet!</p>
+                  <p className="text-xs mb-3" style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#C0A0B0" }}>Add your first item</p>
+                  <button onClick={() => setShowAddItem(true)} className="rounded-2xl px-4 py-2 text-xs font-bold" style={{ background: "#FF1493", color: "#fff", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
                     <Plus size={12} className="inline mr-1" />Add item
                   </button>
                 </div>
@@ -500,7 +500,7 @@ export default function App() {
                   {/* Add tile */}
                   <button onClick={() => setShowAddItem(true)} className="aspect-square rounded-2xl flex flex-col items-center justify-center gap-1 transition-all" style={{ border: "2.5px dashed #FFB6D9", background: "#fff5fb" }}>
                     <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "#FFE8F5" }}><Plus size={15} color="#FF1493" /></div>
-                    <span className="text-xs font-bold" style={{ fontFamily: "'Nunito', sans-serif", color: "#FF1493" }}>Add</span>
+                    <span className="text-xs font-bold" style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#FF1493" }}>Add</span>
                   </button>
                 </div>
               )}
@@ -519,7 +519,7 @@ export default function App() {
                   )}
                   {/* Quick actions */}
                   <div className="absolute top-4 right-4 flex gap-2">
-                    <button onClick={() => setShowPhotoPicker(true)} className="flex items-center gap-1.5 rounded-2xl px-3 py-1.5 text-xs font-bold backdrop-blur-sm" style={{ background: "rgba(255,255,255,0.9)", color: "#FF1493", fontFamily: "'Nunito', sans-serif", border: "2px solid #FFD6F0" }}>
+                    <button onClick={() => setShowPhotoPicker(true)} className="flex items-center gap-1.5 rounded-2xl px-3 py-1.5 text-xs font-bold backdrop-blur-sm" style={{ background: "rgba(255,255,255,0.9)", color: "#FF1493", fontFamily: "'ZT Bros Oskon 90s', sans-serif", border: "2px solid #FFD6F0" }}>
                       <Search size={11} />Photos
                     </button>
                     <button onClick={() => deleteItem(selectedItem.id)} className="w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm" style={{ background: "rgba(255,255,255,0.9)", border: "2px solid #FFD6F0" }}>
@@ -528,7 +528,7 @@ export default function App() {
                   </div>
                   {/* list name + rename/delete */}
                   <div className="absolute bottom-4 left-4 flex gap-2">
-                    <button onClick={() => { setEditingListId(activeListId); setEditingName(activeList.name); }} className="flex items-center gap-1 rounded-xl px-2.5 py-1 text-xs font-bold backdrop-blur-sm" style={{ background: "rgba(255,255,255,0.85)", color: "#7A5E8A", fontFamily: "'Nunito', sans-serif" }}>
+                    <button onClick={() => { setEditingListId(activeListId); setEditingName(activeList.name); }} className="flex items-center gap-1 rounded-xl px-2.5 py-1 text-xs font-bold backdrop-blur-sm" style={{ background: "rgba(255,255,255,0.85)", color: "#7A5E8A", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
                       <Edit3 size={10} />{activeList.name}
                     </button>
                     {lists.length > 1 && (
@@ -541,8 +541,8 @@ export default function App() {
 
                 {/* Detail */}
                 <div className="flex-1 overflow-y-auto p-5">
-                  <h2 className="text-xl font-semibold mb-1" style={{ fontFamily: "'Fredoka', sans-serif", color: "#12002A" }}>{selectedItem.title}</h2>
-                  <p className="text-sm mb-3 leading-relaxed" style={{ fontFamily: "'Nunito', sans-serif", color: "#7A5E8A" }}>{selectedItem.description}</p>
+                  <h2 className="text-xl font-semibold mb-1" style={{ fontFamily: "'Crazy Curlz', cursive", color: "#12002A" }}>{selectedItem.title}</h2>
+                  <p className="text-sm mb-3 leading-relaxed" style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#7A5E8A" }}>{selectedItem.description}</p>
 
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-baseline gap-2">
@@ -551,7 +551,7 @@ export default function App() {
                         <span className="text-sm line-through" style={{ fontFamily: "'DM Mono', monospace", color: "#C0A0B0" }}>{fmt(selectedItem.originalPrice)}</span>
                       )}
                     </div>
-                    <a href={selectedItem.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 rounded-2xl px-4 py-2 text-sm font-bold transition-all" style={{ background: "linear-gradient(135deg, #42FAE1, #00D4B8)", color: "#003D35", fontFamily: "'Nunito', sans-serif" }}>
+                    <a href={selectedItem.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 rounded-2xl px-4 py-2 text-sm font-bold transition-all" style={{ background: "linear-gradient(135deg, #42FAE1, #00D4B8)", color: "#003D35", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
                       Visit {selectedItem.store} <ExternalLink size={13} />
                     </a>
                   </div>
@@ -559,7 +559,7 @@ export default function App() {
                   {selectedItem.onSale && (
                     <div className="flex items-center gap-2 rounded-2xl p-3 text-sm" style={{ background: "#E8FDF9", border: "2px solid #42FAE1" }}>
                       <AlertCircle size={15} color="#006B5E" />
-                      <span className="font-bold" style={{ fontFamily: "'Nunito', sans-serif", color: "#006B5E" }}>
+                      <span className="font-bold" style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#006B5E" }}>
                         This item is on sale! Save {fmt(selectedItem.originalPrice! - selectedItem.price!)} today.
                       </span>
                     </div>
@@ -568,7 +568,7 @@ export default function App() {
 
                 {/* Bottom: add item */}
                 <div className="flex-shrink-0 px-5 pb-5">
-                  <button onClick={() => setShowAddItem(true)} className="w-full rounded-2xl py-3 text-sm font-bold flex items-center justify-center gap-2 transition-all" style={{ background: "linear-gradient(135deg, #FF1493, #FF69B4)", color: "#fff", fontFamily: "'Nunito', sans-serif" }}>
+                  <button onClick={() => setShowAddItem(true)} className="w-full rounded-2xl py-3 text-sm font-bold flex items-center justify-center gap-2 transition-all" style={{ background: "linear-gradient(135deg, #FF1493, #FF69B4)", color: "#fff", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
                     <Plus size={16} />Add another item
                   </button>
                 </div>
@@ -579,11 +579,11 @@ export default function App() {
                 <div className="w-20 h-20 rounded-3xl flex items-center justify-center mb-4" style={{ background: "linear-gradient(135deg, #FFE8F5, #E8FDF9)" }}>
                   <Heart size={36} fill="#FF1493" color="#FF1493" />
                 </div>
-                <h3 className="text-2xl font-semibold mb-2" style={{ fontFamily: "'Fredoka', sans-serif", color: "#FF1493" }}>Start your wishlist!</h3>
-                <p className="text-sm mb-6" style={{ fontFamily: "'Nunito', sans-serif", color: "#C0A0B0", maxWidth: "220px" }}>
+                <h3 className="text-2xl font-semibold mb-2" style={{ fontFamily: "'Crazy Curlz', cursive", color: "#FF1493" }}>Start your wishlist!</h3>
+                <p className="text-sm mb-6" style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#C0A0B0", maxWidth: "220px" }}>
                   Paste any product link and we will find photos and prices for you.
                 </p>
-                <button onClick={() => setShowAddItem(true)} className="rounded-2xl px-6 py-3 text-sm font-bold flex items-center gap-2" style={{ background: "linear-gradient(135deg, #FF1493, #FF69B4)", color: "#fff", fontFamily: "'Nunito', sans-serif" }}>
+                <button onClick={() => setShowAddItem(true)} className="rounded-2xl px-6 py-3 text-sm font-bold flex items-center gap-2" style={{ background: "linear-gradient(135deg, #FF1493, #FF69B4)", color: "#fff", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
                   <Sparkles size={15} />Add your first item
                 </button>
               </div>
