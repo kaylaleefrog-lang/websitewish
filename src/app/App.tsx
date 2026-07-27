@@ -69,20 +69,6 @@ function ListIcon({ value, size = 16 }: { value: string; size?: number }) {
   return <found.Icon size={size} />;
 }
 
-const SEED_LISTS: Wishlist[] = [
-  { id: "wl-1", name: "Holiday Gifts", icon: "gift", createdAt: new Date("2024-11-01"), items: [
-    { id: "item-1", url: "https://www.nordstrom.com/s/sweater", title: "Merino Wool Crewneck Sweater — Oatmeal", description: "100% extra-fine merino, relaxed fit, dropped shoulders.", selectedImage: "https://images.unsplash.com/photo-1516826957135-700dedea698c?w=600&h=600&fit=crop&auto=format", availableImages: ["https://images.unsplash.com/photo-1516826957135-700dedea698c?w=600&h=600&fit=crop&auto=format","https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=600&h=600&fit=crop&auto=format","https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=600&h=600&fit=crop&auto=format"], price: 78.00, originalPrice: 130.00, onSale: true, salePercent: 40, store: "Nordstrom", addedAt: new Date("2024-11-10"), notifyOnSale: true },
-    { id: "item-2", url: "https://www.etsy.com/listing/mug", title: "Hand-thrown Ceramic Mug — Speckled Sage", description: "Wheel-thrown stoneware, food-safe glaze, 12 oz.", selectedImage: "https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=600&h=600&fit=crop&auto=format", availableImages: ["https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=600&h=600&fit=crop&auto=format","https://images.unsplash.com/photo-1577937927133-66ef06acdf18?w=600&h=600&fit=crop&auto=format","https://images.unsplash.com/photo-1571019613914-85f342c6a11e?w=600&h=600&fit=crop&auto=format"], price: 34.00, originalPrice: 34.00, onSale: false, salePercent: null, store: "Etsy", addedAt: new Date("2024-11-12"), notifyOnSale: true },
-    { id: "item-3", url: "https://www.amazon.com/tote", title: "Artisan Leather Tote Bag — Saddle Brown", description: "Full-grain vegetable-tanned leather, brass hardware.", selectedImage: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&h=600&fit=crop&auto=format", availableImages: ["https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&h=600&fit=crop&auto=format","https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&h=600&fit=crop&auto=format"], price: 189.99, originalPrice: 189.99, onSale: false, salePercent: null, store: "Amazon", addedAt: new Date("2024-11-13"), notifyOnSale: false },
-  ]},
-  { id: "wl-2", name: "For My Apartment", icon: "home", createdAt: new Date("2024-10-15"), items: [
-    { id: "item-4", url: "https://www.urbanoutfitters.com/pillow", title: "Linen Throw Pillow Cover — Natural", description: "Stonewashed 100% European linen, invisible zipper.", selectedImage: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&h=600&fit=crop&auto=format", availableImages: ["https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&h=600&fit=crop&auto=format","https://images.unsplash.com/photo-1540638349517-3abd5afc5847?w=600&h=600&fit=crop&auto=format"], price: 29.00, originalPrice: 29.00, onSale: false, salePercent: null, store: "Urban Outfitters", addedAt: new Date("2024-10-20"), notifyOnSale: false },
-  ]},
-];
-const SEED_NOTIFICATIONS: Notification[] = [
-  { id: "notif-1", itemTitle: "Merino Wool Crewneck Sweater — Oatmeal", listName: "Holiday Gifts", oldPrice: 130.00, newPrice: 78.00, salePercent: 40, timestamp: new Date("2024-11-14T09:22:00"), read: false },
-];
-
 function uid() { return Math.random().toString(36).slice(2, 10); }
 function fmt(n: number) { return "$" + n.toFixed(2); }
 
@@ -339,10 +325,10 @@ function NotificationsPanel({ notifications, onMarkRead, onClose }: { notificati
 
 // ─── Main App ─────────────────────────────────────────────────────────────────
 export default function App() {
-  const [lists, setLists] = useState<Wishlist[]>(SEED_LISTS);
-  const [activeListId, setActiveListId] = useState<string>(SEED_LISTS[0].id);
+  const [lists, setLists] = useState<Wishlist[]>([]);
+  const [activeListId, setActiveListId] = useState<string>("");
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
-  const [notifications, setNotifications] = useState<Notification[]>(SEED_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showAddItem, setShowAddItem] = useState(false);
   const [showShare, setShowShare] = useState(false);
   const [showNotifs, setShowNotifs] = useState(false);
@@ -419,6 +405,40 @@ export default function App() {
         </div>
 
         {/* Body */}
+        {lists.length === 0 ? (
+          /* Welcome screen — shown until the first wishlist is created */
+          <div className="flex-1 flex items-center justify-center p-8">
+            <div className="text-center max-w-sm">
+              <div className="w-20 h-20 rounded-3xl mx-auto mb-5 flex items-center justify-center" style={{ background: "linear-gradient(135deg, #FFE8F5, #E8FDF9)" }}>
+                <Heart size={36} fill="#FF1493" color="#FF1493" />
+              </div>
+              <h1 className="text-3xl font-semibold mb-2" style={{ fontFamily: "'Angelica', cursive", color: "#FF1493" }}>Hi! Welcome to Wishly :))</h1>
+              <p className="text-base mb-6" style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#7A5E8A" }}>Would you like to create a new wishlist?</p>
+
+              {showNewList ? (
+                <div className="text-left p-4 rounded-2xl" style={{ background: "#fff", border: "2px solid #FFD6F0" }}>
+                  <div className="grid grid-cols-4 gap-1.5 mb-3">
+                    {LIST_ICONS.map(({ value, Icon }) => (
+                      <button key={value} onClick={() => setNewListIcon(value)} className="aspect-square rounded-xl flex items-center justify-center transition-colors"
+                        style={{ background: newListIcon === value ? "#FF1493" : "#FFE8F5", color: newListIcon === value ? "#fff" : "#FF1493" }}>
+                        <Icon size={15} />
+                      </button>
+                    ))}
+                  </div>
+                  <input value={newListName} onChange={e => setNewListName(e.target.value)} onKeyDown={e => { if (e.key === "Enter") createList(); if (e.key === "Escape") setShowNewList(false); }} placeholder="Name your wishlist..." className="w-full rounded-xl px-3 py-2 text-sm focus:outline-none mb-3" style={{ background: "#FDF5FF", border: "2px solid #FFD6F0", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }} autoFocus />
+                  <div className="flex gap-2">
+                    <button onClick={createList} className="flex-1 rounded-xl py-2 text-sm font-bold" style={{ background: "#FF1493", color: "#fff", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>Create</button>
+                    <button onClick={() => setShowNewList(false)} className="flex-1 rounded-xl py-2 text-sm font-bold" style={{ border: "2px solid #FFD6F0", color: "#FF1493", background: "#fff", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>Cancel</button>
+                  </div>
+                </div>
+              ) : (
+                <button onClick={() => setShowNewList(true)} className="rounded-2xl px-6 py-3 text-sm font-bold flex items-center gap-2 mx-auto" style={{ background: "linear-gradient(135deg, #FF1493, #FF69B4)", color: "#fff", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
+                  <Sparkles size={15} />Yes, let's create one!
+                </button>
+              )}
+            </div>
+          </div>
+        ) : (
         <div className="flex flex-1 min-h-0">
 
           {/* Left: wishlist tabs + item grid */}
@@ -597,6 +617,7 @@ export default function App() {
             </div>
           )}
         </div>
+        )}
       </div>
 
       {/* Modals */}
