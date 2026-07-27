@@ -123,7 +123,7 @@ function ItemCard({ item, onDelete, onChangePhoto, onClick, isSelected }: {
           )}
         </div>
         <div className="p-2.5">
-          <p className="text-xs font-bold leading-snug line-clamp-2 mb-1" style={{ fontFamily: "'Crazy Curlz', cursive", color: "#12002A" }}>{item.title}</p>
+          <p className="text-xs font-bold leading-snug line-clamp-2 mb-1" style={{ fontFamily: "'Angelica', cursive", color: "#12002A" }}>{item.title}</p>
           <div className="flex items-center gap-1.5">
             {item.price !== null && <span className="text-xs font-bold" style={{ fontFamily: "'DM Mono', monospace", color: "#FF1493" }}>{fmt(item.price)}</span>}
             {item.onSale && item.originalPrice && item.originalPrice !== item.price && (
@@ -154,7 +154,7 @@ function PhotoPickerModal({ images, selected, onSelect, onClose }: {
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
       <div className="relative rounded-3xl border-2 p-6 max-w-xs w-full shadow-2xl" style={{ background: "#fff", borderColor: "#FF1493" }} onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
-          <h4 className="text-lg font-semibold" style={{ fontFamily: "'Crazy Curlz', cursive", color: "#FF1493" }}>Pick a photo</h4>
+          <h4 className="text-lg font-semibold" style={{ fontFamily: "'Angelica', cursive", color: "#FF1493" }}>Pick a photo</h4>
           <button onClick={onClose} className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "#FFE8F5" }}><X size={14} /></button>
         </div>
         <div className="grid grid-cols-2 gap-3">
@@ -196,7 +196,7 @@ function AddItemModal({ onClose, onAdd }: { onClose: () => void; onAdd: (item: W
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5" style={{ background: "linear-gradient(135deg, #FFE8F5 0%, #E8FDF9 100%)" }}>
           <div>
-            <h2 className="text-xl font-semibold" style={{ fontFamily: "'Crazy Curlz', cursive", color: "#FF1493" }}>Add to wishlist</h2>
+            <h2 className="text-xl font-semibold" style={{ fontFamily: "'Angelica', cursive", color: "#FF1493" }}>Add to wishlist</h2>
             <p className="text-xs mt-0.5" style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#7A5E8A" }}>
               {step === "url" ? "Paste a product link to get started" : "Now pick your fave photo!"}
             </p>
@@ -230,7 +230,7 @@ function AddItemModal({ onClose, onAdd }: { onClose: () => void; onAdd: (item: W
               <div className="flex gap-3 p-3 rounded-2xl" style={{ background: "#FFF5FD" }}>
                 <img src={selectedImg} alt={scraped.title} className="w-16 h-16 object-cover rounded-xl flex-shrink-0" style={{ border: "2px solid #FFD6F0" }} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold line-clamp-2" style={{ fontFamily: "'Crazy Curlz', cursive", color: "#12002A" }}>{scraped.title}</p>
+                  <p className="text-sm font-bold line-clamp-2" style={{ fontFamily: "'Angelica', cursive", color: "#12002A" }}>{scraped.title}</p>
                   <div className="flex items-center gap-2 mt-1">
                     {scraped.price && <span className="text-sm font-bold" style={{ fontFamily: "'DM Mono', monospace", color: "#FF1493" }}>{fmt(scraped.price)}</span>}
                     {scraped.onSale && scraped.originalPrice && scraped.originalPrice !== scraped.price && <span className="text-xs line-through" style={{ fontFamily: "'DM Mono', monospace", color: "#C0A0B0" }}>{fmt(scraped.originalPrice)}</span>}
@@ -279,14 +279,14 @@ function ShareModal({ list, onClose }: { list: Wishlist; onClose: () => void }) 
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
       <div className="relative rounded-3xl p-6 max-w-sm w-full shadow-2xl" style={{ background: "#fff", border: "2.5px solid #FFD6F0" }} onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-5">
-          <h3 className="text-xl font-semibold" style={{ fontFamily: "'Crazy Curlz', cursive", color: "#FF1493" }}>Share this list</h3>
+          <h3 className="text-xl font-semibold" style={{ fontFamily: "'Angelica', cursive", color: "#FF1493" }}>Share this list</h3>
           <button onClick={onClose} className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "#FFE8F5" }}><X size={14} color="#FF1493" /></button>
         </div>
         <div className="text-center mb-5">
           <div className="w-14 h-14 rounded-2xl mx-auto mb-3 flex items-center justify-center" style={{ background: "linear-gradient(135deg, #FFE8F5, #E8FDF9)" }}>
             <span className="text-pink-500"><ListIcon value={list.icon} size={24} /></span>
           </div>
-          <p className="text-lg font-semibold" style={{ fontFamily: "'Crazy Curlz', cursive", color: "#12002A" }}>{list.name}</p>
+          <p className="text-lg font-semibold" style={{ fontFamily: "'Angelica', cursive", color: "#12002A" }}>{list.name}</p>
           <p className="text-sm" style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#7A5E8A" }}>{list.items.length} item{list.items.length !== 1 ? "s" : ""}</p>
         </div>
         <div className="flex gap-2 mb-3">
@@ -306,7 +306,7 @@ function NotificationsPanel({ notifications, onMarkRead, onClose }: { notificati
   return (
     <div className="absolute top-12 right-0 z-40 w-80 rounded-3xl shadow-2xl overflow-hidden" style={{ background: "#fff", border: "2.5px solid #FFD6F0" }} onClick={e => e.stopPropagation()}>
       <div className="px-4 py-3 flex items-center justify-between" style={{ background: "linear-gradient(135deg, #FFE8F5, #E8FDF9)" }}>
-        <h4 className="font-semibold" style={{ fontFamily: "'Crazy Curlz', cursive", color: "#FF1493" }}>Price alerts</h4>
+        <h4 className="font-semibold" style={{ fontFamily: "'Angelica', cursive", color: "#FF1493" }}>Price alerts</h4>
         {unread.length > 0 && <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: "#FF1493", color: "#fff", fontFamily: "'DM Mono', monospace" }}>{unread.length} new</span>}
       </div>
       <div className="max-h-72 overflow-y-auto">
@@ -395,7 +395,7 @@ export default function App() {
         <div className="flex items-center justify-between px-6 py-4 flex-shrink-0" style={{ background: "#fff" }}>
           <div className="flex items-center gap-2">
             <Heart size={20} fill="#FF1493" color="#FF1493" />
-            <span className="text-2xl font-semibold" style={{ fontFamily: "'Crazy Curlz', cursive", color: "#FF1493", letterSpacing: "0.02em" }}>Wishly</span>
+            <span className="text-2xl font-semibold" style={{ fontFamily: "'Angelica', cursive", color: "#FF1493", letterSpacing: "0.02em" }}>Wishly</span>
           </div>
           <div className="flex items-center gap-2">
             <button onClick={() => setShowShare(true)} className="flex items-center gap-1.5 rounded-2xl px-4 py-2 text-sm font-bold transition-all" style={{ background: "#fff", border: "2px solid #FFD6F0", color: "#FF1493", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
@@ -481,7 +481,7 @@ export default function App() {
             <div className="flex-1 overflow-y-auto px-4 pb-4">
               {activeList?.items.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-40 text-center">
-                  <p className="text-sm font-bold mb-2" style={{ fontFamily: "'Crazy Curlz', cursive", color: "#FF1493" }}>Nothing here yet!</p>
+                  <p className="text-sm font-bold mb-2" style={{ fontFamily: "'Angelica', cursive", color: "#FF1493" }}>Nothing here yet!</p>
                   <p className="text-xs mb-3" style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#C0A0B0" }}>Add your first item</p>
                   <button onClick={() => setShowAddItem(true)} className="rounded-2xl px-4 py-2 text-xs font-bold" style={{ background: "#FF1493", color: "#fff", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
                     <Plus size={12} className="inline mr-1" />Add item
@@ -541,7 +541,7 @@ export default function App() {
 
                 {/* Detail */}
                 <div className="flex-1 overflow-y-auto p-5">
-                  <h2 className="text-xl font-semibold mb-1" style={{ fontFamily: "'Crazy Curlz', cursive", color: "#12002A" }}>{selectedItem.title}</h2>
+                  <h2 className="text-xl font-semibold mb-1" style={{ fontFamily: "'Angelica', cursive", color: "#12002A" }}>{selectedItem.title}</h2>
                   <p className="text-sm mb-3 leading-relaxed" style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#7A5E8A" }}>{selectedItem.description}</p>
 
                   <div className="flex items-center justify-between mb-4">
@@ -579,7 +579,7 @@ export default function App() {
                 <div className="w-20 h-20 rounded-3xl flex items-center justify-center mb-4" style={{ background: "linear-gradient(135deg, #FFE8F5, #E8FDF9)" }}>
                   <Heart size={36} fill="#FF1493" color="#FF1493" />
                 </div>
-                <h3 className="text-2xl font-semibold mb-2" style={{ fontFamily: "'Crazy Curlz', cursive", color: "#FF1493" }}>Start your wishlist!</h3>
+                <h3 className="text-2xl font-semibold mb-2" style={{ fontFamily: "'Angelica', cursive", color: "#FF1493" }}>Start your wishlist!</h3>
                 <p className="text-sm mb-6" style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#C0A0B0", maxWidth: "220px" }}>
                   Paste any product link and we will find photos and prices for you.
                 </p>
