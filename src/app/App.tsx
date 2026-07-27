@@ -111,7 +111,7 @@ async function apiCreateGuest(): Promise<User> {
   return data.user;
 }
 async function apiClaimAccount(email: string, password: string): Promise<User> {
-  const data = await apiFetch("/api/auth/claim", { method: "POST", body: JSON.stringify({ email, password }) });
+  const data = await apiFetch("/api/auth/guest", { method: "PATCH", body: JSON.stringify({ email, password }) });
   return data.user;
 }
 

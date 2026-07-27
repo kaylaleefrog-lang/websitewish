@@ -9,7 +9,7 @@ type PublicItem = WishlistItem & { claimed: boolean };
 type PublicWishlist = Omit<Wishlist, "items"> & { items: PublicItem[] };
 
 async function setClaimed(itemId: string, claimed: boolean): Promise<PublicItem> {
-  const res = await fetch("/api/public-claim", {
+  const res = await fetch("/api/public-list", {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ itemId, claimed }),
