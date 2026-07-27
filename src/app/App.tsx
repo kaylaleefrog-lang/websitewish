@@ -338,7 +338,7 @@ function NotificationsPanel({ notifications, onMarkRead, onClose }: { notificati
 export default function App() {
   const [lists, setLists] = useState<Wishlist[]>(SEED_LISTS);
   const [activeListId, setActiveListId] = useState<string>(SEED_LISTS[0].id);
-  const [selectedItemId, setSelectedItemId] = useState<string | null>(SEED_LISTS[0].items[0]?.id ?? null);
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>(SEED_NOTIFICATIONS);
   const [showAddItem, setShowAddItem] = useState(false);
   const [showShare, setShowShare] = useState(false);
@@ -351,7 +351,7 @@ export default function App() {
   const [showPhotoPicker, setShowPhotoPicker] = useState(false);
 
   const activeList = lists.find(l => l.id === activeListId)!;
-  const selectedItem = activeList?.items.find(i => i.id === selectedItemId) ?? activeList?.items[0] ?? null;
+  const selectedItem = activeList?.items.find(i => i.id === selectedItemId) ?? null;
   const unreadCount = notifications.filter(n => !n.read).length;
 
   function addItem(item: WishlistItem) {
@@ -363,7 +363,7 @@ export default function App() {
   }
   function deleteItem(itemId: string) {
     setLists(ls => ls.map(l => l.id === activeListId ? { ...l, items: l.items.filter(i => i.id !== itemId) } : l));
-    if (selectedItemId === itemId) setSelectedItemId(activeList.items.find(i => i.id !== itemId)?.id ?? null);
+    if (selectedItemId === itemId) setSelectedItemId(null);
   }
   function changePhoto(itemId: string, img: string) {
     setLists(ls => ls.map(l => l.id === activeListId ? { ...l, items: l.items.map(i => i.id === itemId ? { ...i, selectedImage: img } : i) } : l));
@@ -386,10 +386,10 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 md:p-8" style={{ background: "#FFFFFF", backgroundImage: polkaDotBg }}>
+    <div className="min-h-screen flex items-center justify-center p-2 md:p-4" style={{ background: "#FFFFFF", backgroundImage: polkaDotBg }}>
 
       {/* Main card */}
-      <div className="w-full max-w-5xl rounded-[2rem] overflow-hidden shadow-2xl flex flex-col" style={{ background: "#FFE8F5", minHeight: "580px", maxHeight: "90vh", border: "3px solid #fff" }}>
+      <div className="w-full max-w-[1600px] rounded-[2rem] overflow-hidden shadow-2xl flex flex-col" style={{ background: "#FFE8F5", height: "95vh", border: "3px solid #fff" }}>
 
         {/* Top bar */}
         <div className="flex items-center justify-between px-6 py-4 flex-shrink-0" style={{ background: "#fff" }}>
@@ -419,7 +419,7 @@ export default function App() {
         <div className="flex flex-1 min-h-0">
 
           {/* Left: wishlist tabs + item grid */}
-          <div className="flex flex-col w-[320px] flex-shrink-0" style={{ background: "#FFE8F5" }}>
+          <div className="flex flex-col flex-shrink-0" style={{ background: "#FFE8F5", width: selectedItem ? "50%" : "100%", transition: "width 300ms ease" }}>
             {/* List tabs */}
             <div className="px-4 pt-4 pb-2 flex-shrink-0">
               <div className="flex items-center gap-1.5 mb-3 flex-wrap">
@@ -438,11 +438,11 @@ export default function App() {
                   ) : (
                     <button
                       key={list.id}
-                      onClick={() => { setActiveListId(list.id); setSelectedItemId(list.items[0]?.id ?? null); }}
+                      onClick={() => { setActiveListId(list.id); setSelectedItemId(null); }}
                       onContextMenu={e => {
                         e.preventDefault();
                         setActiveListId(list.id);
-                        setSelectedItemId(list.items[0]?.id ?? null);
+                        setSelectedItemId(null);
                         setEditingListId(list.id);
                         setEditingName(list.name);
                       }}
@@ -503,7 +503,7 @@ export default function App() {
                   </button>
                 </div>
               ) : (
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))" }}>
                   {activeList.items.map(item => (
                     <ItemCard
                       key={item.id} item={item} isSelected={selectedItem?.id === item.id}
@@ -522,9 +522,9 @@ export default function App() {
             </div>
           </div>
 
-          {/* Right: item detail panel */}
-          <div className="flex-1 flex flex-col min-w-0 rounded-[1.5rem] m-3 overflow-hidden" style={{ background: "#fff" }}>
-            {selectedItem ? (
+          {/* Right: item detail panel — only takes up space once an item is selected */}
+          {selectedItem && (
+            <div className="flex-1 flex flex-col min-w-0 rounded-[1.5rem] m-3 overflow-hidden" style={{ background: "#fff" }}>
               <>
                 {/* Big image */}
                 <div className="relative flex-shrink-0" style={{ height: "260px", background: "#FFE8F5" }}>
@@ -539,6 +539,9 @@ export default function App() {
                     </button>
                     <button onClick={() => deleteItem(selectedItem.id)} className="w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm" style={{ background: "rgba(255,255,255,0.9)", border: "2px solid #FFD6F0" }}>
                       <Trash2 size={13} color="#FF1493" />
+                    </button>
+                    <button onClick={() => setSelectedItemId(null)} className="w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm" style={{ background: "rgba(255,255,255,0.9)", border: "2px solid #FFD6F0" }} title="Back to grid">
+                      <X size={13} color="#FF1493" />
                     </button>
                   </div>
                   {/* list name + rename/delete */}
@@ -588,22 +591,8 @@ export default function App() {
                   </button>
                 </div>
               </>
-            ) : (
-              /* Empty state */
-              <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-                <div className="w-20 h-20 rounded-3xl flex items-center justify-center mb-4" style={{ background: "linear-gradient(135deg, #FFE8F5, #E8FDF9)" }}>
-                  <Heart size={36} fill="#FF1493" color="#FF1493" />
-                </div>
-                <h3 className="text-2xl font-semibold mb-2" style={{ fontFamily: "'Angelica', cursive", color: "#FF1493" }}>Start your wishlist!</h3>
-                <p className="text-sm mb-6" style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#C0A0B0", maxWidth: "220px" }}>
-                  Paste any product link and we will find photos and prices for you.
-                </p>
-                <button onClick={() => setShowAddItem(true)} className="rounded-2xl px-6 py-3 text-sm font-bold flex items-center gap-2" style={{ background: "linear-gradient(135deg, #FF1493, #FF69B4)", color: "#fff", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
-                  <Sparkles size={15} />Add your first item
-                </button>
-              </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
 
