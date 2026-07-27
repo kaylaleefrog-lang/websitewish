@@ -4,6 +4,7 @@ import {
   Copy, Trash2, Edit3, AlertCircle, Sparkles,
   Gift, Home, Star, Shirt, BookOpen, Leaf, Palette, ShoppingBag, Search
 } from "lucide-react";
+import heartsLogo from "../assets/images/hearts-logo.png";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface WishlistItem {
@@ -73,58 +74,10 @@ function uid() { return Math.random().toString(36).slice(2, 10); }
 function fmt(n: number) { return "$" + n.toFixed(2); }
 
 // ─── Polka dot background ─────────────────────────────────────────────────────
-const polkaDotBg = `url("data:image/svg+xml,%3Csvg width='48' height='48' viewBox='0 0 48 48' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='24' cy='24' r='5.5' fill='%2342FAE1' fill-opacity='0.35'/%3E%3C/svg%3E")`;
+const polkaDotBg = `url("data:image/svg+xml,%3Csvg width='64' height='64' viewBox='0 0 64 64' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='32' cy='32' r='7.5' fill='%2342FAE1' fill-opacity='0.35'/%3E%3C/svg%3E")`;
 
-// ─── Custom heart cursor ───────────────────────────────────────────────────────
-const heartCursor = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cpath d='M14 24C14 24 3 17 3 10C3 6 6 3 10 3C12 3 13.5 4.5 14 6C14.5 4.5 16 3 18 3C22 3 25 6 25 10C25 17 14 24 14 24Z' fill='%23FF1493' stroke='white' stroke-width='1.5'/%3E%3C/svg%3E") 4 2, auto`;
-
-// ─── Glossy hearts logo ────────────────────────────────────────────────────────
-const HEART_PATH = "M50,88 C50,88 6,54 6,26 C6,10 18,0 33,0 C42,0 49,6 50,14 C51,6 58,0 67,0 C82,0 94,10 94,26 C94,54 50,88 50,88 Z";
-
-function GlossyHeart({ x, y, size }: { x: number; y: number; size: number }) {
-  const clipId = `heartClip-${x}-${y}`;
-  return (
-    <g transform={`translate(${x},${y}) scale(${size / 100})`}>
-      <clipPath id={clipId}><path d={HEART_PATH} /></clipPath>
-      <path d={HEART_PATH} fill="url(#heartGloss)" stroke="#FFB8D8" strokeWidth={2.5} />
-      <g clipPath={`url(#${clipId})`}>
-        <ellipse cx={32} cy={26} rx={22} ry={14} fill="#fff" opacity={0.55} transform="rotate(-25 32 26)" />
-        <ellipse cx={30} cy={24} rx={9} ry={5} fill="#fff" opacity={0.75} transform="rotate(-25 30 24)" />
-      </g>
-    </g>
-  );
-}
-
-function Sparkle({ x, y, size = 10, opacity = 1 }: { x: number; y: number; size?: number; opacity?: number }) {
-  return (
-    <g transform={`translate(${x},${y})`} opacity={opacity}>
-      <path
-        d={`M0,${-size} C${size * 0.15},${-size * 0.15} ${size * 0.15},${-size * 0.15} ${size},0 C${size * 0.15},${size * 0.15} ${size * 0.15},${size * 0.15} 0,${size} C${-size * 0.15},${size * 0.15} ${-size * 0.15},${size * 0.15} ${-size},0 C${-size * 0.15},${-size * 0.15} ${-size * 0.15},${-size * 0.15} 0,${-size} Z`}
-        fill="#FFC7DE"
-      />
-    </g>
-  );
-}
-
-function GlossyHeartsLogo({ width = 140 }: { width?: number }) {
-  return (
-    <svg width={width} height={width * 0.66} viewBox="0 0 220 146" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <radialGradient id="heartGloss" cx="30%" cy="25%" r="85%">
-          <stop offset="0%" stopColor="#FFF3F8" />
-          <stop offset="45%" stopColor="#FFC3DE" />
-          <stop offset="100%" stopColor="#FF9FC9" />
-        </radialGradient>
-      </defs>
-      <circle cx={188} cy={38} r={4} fill="#FFCADF" />
-      <Sparkle x={168} y={62} size={9} />
-      <GlossyHeart x={5} y={5} size={128} />
-      <GlossyHeart x={128} y={62} size={78} />
-      <Sparkle x={132} y={128} size={8} />
-      <circle cx={112} cy={140} r={3.5} fill="#FFCADF" />
-    </svg>
-  );
-}
+// ─── Custom mint arrow cursor ──────────────────────────────────────────────────
+const heartCursor = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M3 2 L3 19 L7.5 15.2 L10.5 21.5 L13.2 20.2 L10.2 14 L16 14 Z' fill='%2342FAE1' stroke='white' stroke-width='1.3' stroke-linejoin='round'/%3E%3C/svg%3E") 3 2, auto`;
 
 // ─── Subcomponents ────────────────────────────────────────────────────────────
 function SaleBadge({ pct }: { pct: number }) {
@@ -426,7 +379,7 @@ export default function App() {
     <div className="min-h-screen flex items-center justify-center p-3 md:p-6" style={{ background: "#FFFFFF", backgroundImage: polkaDotBg, cursor: heartCursor }}>
 
       {/* Main card */}
-      <div className="w-full max-w-[1280px] rounded-[2rem] overflow-hidden shadow-2xl flex flex-col" style={{ background: "#FFE8F5", height: "90vh", border: "3px solid #fff" }}>
+      <div className="w-full max-w-[1100px] rounded-[2rem] overflow-hidden shadow-2xl flex flex-col" style={{ background: "#FFE8F5", height: "85vh", border: "3px solid #fff" }}>
 
         {/* Top bar */}
         <div className="flex items-center justify-between px-6 py-4 flex-shrink-0" style={{ background: "#fff" }}>
@@ -458,7 +411,7 @@ export default function App() {
           <div className="flex-1 flex items-center justify-center p-8">
             <div className="text-center max-w-sm">
               <div className="flex justify-center mb-5">
-                <GlossyHeartsLogo width={150} />
+                <img src={heartsLogo} alt="" width={170} className="select-none" draggable={false} />
               </div>
               <h1 className="text-3xl font-semibold mb-2" style={{ fontFamily: "'Angelica', cursive", color: "#FF1493" }}>Hi! Welcome to Wishly :))</h1>
               <p className="text-base mb-6" style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#7A5E8A" }}>Would you like to create a new wishlist?</p>
