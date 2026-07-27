@@ -1,7 +1,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --font-size: 18px;
+  --font-size: 25px;
   --background: #FFFFFF;
   --foreground: #12002A;
   --card: #FFFFFF;
@@ -135,6 +135,12 @@
 
   html {
     font-size: var(--font-size);
+  }
+
+  /* Let the custom heart cursor set on the app root show through on
+     interactive elements too, instead of the browser's default arrow. */
+  button, a, input, textarea, [role="button"] {
+    cursor: inherit;
   }
 
   h1 {

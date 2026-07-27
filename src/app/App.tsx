@@ -4,6 +4,7 @@ import {
   Copy, Trash2, Edit3, AlertCircle, Sparkles,
   Gift, Home, Star, Shirt, BookOpen, Leaf, Palette, ShoppingBag, Search
 } from "lucide-react";
+import heartsLogo from "../assets/images/hearts-logo.png";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface WishlistItem {
@@ -69,25 +70,14 @@ function ListIcon({ value, size = 16 }: { value: string; size?: number }) {
   return <found.Icon size={size} />;
 }
 
-const SEED_LISTS: Wishlist[] = [
-  { id: "wl-1", name: "Holiday Gifts", icon: "gift", createdAt: new Date("2024-11-01"), items: [
-    { id: "item-1", url: "https://www.nordstrom.com/s/sweater", title: "Merino Wool Crewneck Sweater — Oatmeal", description: "100% extra-fine merino, relaxed fit, dropped shoulders.", selectedImage: "https://images.unsplash.com/photo-1516826957135-700dedea698c?w=600&h=600&fit=crop&auto=format", availableImages: ["https://images.unsplash.com/photo-1516826957135-700dedea698c?w=600&h=600&fit=crop&auto=format","https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=600&h=600&fit=crop&auto=format","https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=600&h=600&fit=crop&auto=format"], price: 78.00, originalPrice: 130.00, onSale: true, salePercent: 40, store: "Nordstrom", addedAt: new Date("2024-11-10"), notifyOnSale: true },
-    { id: "item-2", url: "https://www.etsy.com/listing/mug", title: "Hand-thrown Ceramic Mug — Speckled Sage", description: "Wheel-thrown stoneware, food-safe glaze, 12 oz.", selectedImage: "https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=600&h=600&fit=crop&auto=format", availableImages: ["https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=600&h=600&fit=crop&auto=format","https://images.unsplash.com/photo-1577937927133-66ef06acdf18?w=600&h=600&fit=crop&auto=format","https://images.unsplash.com/photo-1571019613914-85f342c6a11e?w=600&h=600&fit=crop&auto=format"], price: 34.00, originalPrice: 34.00, onSale: false, salePercent: null, store: "Etsy", addedAt: new Date("2024-11-12"), notifyOnSale: true },
-    { id: "item-3", url: "https://www.amazon.com/tote", title: "Artisan Leather Tote Bag — Saddle Brown", description: "Full-grain vegetable-tanned leather, brass hardware.", selectedImage: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&h=600&fit=crop&auto=format", availableImages: ["https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&h=600&fit=crop&auto=format","https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&h=600&fit=crop&auto=format"], price: 189.99, originalPrice: 189.99, onSale: false, salePercent: null, store: "Amazon", addedAt: new Date("2024-11-13"), notifyOnSale: false },
-  ]},
-  { id: "wl-2", name: "For My Apartment", icon: "home", createdAt: new Date("2024-10-15"), items: [
-    { id: "item-4", url: "https://www.urbanoutfitters.com/pillow", title: "Linen Throw Pillow Cover — Natural", description: "Stonewashed 100% European linen, invisible zipper.", selectedImage: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&h=600&fit=crop&auto=format", availableImages: ["https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&h=600&fit=crop&auto=format","https://images.unsplash.com/photo-1540638349517-3abd5afc5847?w=600&h=600&fit=crop&auto=format"], price: 29.00, originalPrice: 29.00, onSale: false, salePercent: null, store: "Urban Outfitters", addedAt: new Date("2024-10-20"), notifyOnSale: false },
-  ]},
-];
-const SEED_NOTIFICATIONS: Notification[] = [
-  { id: "notif-1", itemTitle: "Merino Wool Crewneck Sweater — Oatmeal", listName: "Holiday Gifts", oldPrice: 130.00, newPrice: 78.00, salePercent: 40, timestamp: new Date("2024-11-14T09:22:00"), read: false },
-];
-
 function uid() { return Math.random().toString(36).slice(2, 10); }
 function fmt(n: number) { return "$" + n.toFixed(2); }
 
 // ─── Polka dot background ─────────────────────────────────────────────────────
-const polkaDotBg = `url("data:image/svg+xml,%3Csvg width='48' height='48' viewBox='0 0 48 48' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='24' cy='24' r='5.5' fill='%2342FAE1' fill-opacity='0.35'/%3E%3C/svg%3E")`;
+const polkaDotBg = `url("data:image/svg+xml,%3Csvg width='64' height='64' viewBox='0 0 64 64' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='32' cy='32' r='7.5' fill='%2342FAE1' fill-opacity='0.35'/%3E%3C/svg%3E")`;
+
+// ─── Custom mint arrow cursor ──────────────────────────────────────────────────
+const heartCursor = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M3 2 L3 19 L7.5 15.2 L10.5 21.5 L13.2 20.2 L10.2 14 L16 14 Z' fill='%2342FAE1' stroke='white' stroke-width='1.3' stroke-linejoin='round'/%3E%3C/svg%3E") 3 2, auto`;
 
 // ─── Subcomponents ────────────────────────────────────────────────────────────
 function SaleBadge({ pct }: { pct: number }) {
@@ -336,10 +326,10 @@ function NotificationsPanel({ notifications, onMarkRead, onClose }: { notificati
 
 // ─── Main App ─────────────────────────────────────────────────────────────────
 export default function App() {
-  const [lists, setLists] = useState<Wishlist[]>(SEED_LISTS);
-  const [activeListId, setActiveListId] = useState<string>(SEED_LISTS[0].id);
-  const [selectedItemId, setSelectedItemId] = useState<string | null>(SEED_LISTS[0].items[0]?.id ?? null);
-  const [notifications, setNotifications] = useState<Notification[]>(SEED_NOTIFICATIONS);
+  const [lists, setLists] = useState<Wishlist[]>([]);
+  const [activeListId, setActiveListId] = useState<string>("");
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showAddItem, setShowAddItem] = useState(false);
   const [showShare, setShowShare] = useState(false);
   const [showNotifs, setShowNotifs] = useState(false);
@@ -351,7 +341,7 @@ export default function App() {
   const [showPhotoPicker, setShowPhotoPicker] = useState(false);
 
   const activeList = lists.find(l => l.id === activeListId)!;
-  const selectedItem = activeList?.items.find(i => i.id === selectedItemId) ?? activeList?.items[0] ?? null;
+  const selectedItem = activeList?.items.find(i => i.id === selectedItemId) ?? null;
   const unreadCount = notifications.filter(n => !n.read).length;
 
   function addItem(item: WishlistItem) {
@@ -363,7 +353,7 @@ export default function App() {
   }
   function deleteItem(itemId: string) {
     setLists(ls => ls.map(l => l.id === activeListId ? { ...l, items: l.items.filter(i => i.id !== itemId) } : l));
-    if (selectedItemId === itemId) setSelectedItemId(activeList.items.find(i => i.id !== itemId)?.id ?? null);
+    if (selectedItemId === itemId) setSelectedItemId(null);
   }
   function changePhoto(itemId: string, img: string) {
     setLists(ls => ls.map(l => l.id === activeListId ? { ...l, items: l.items.map(i => i.id === itemId ? { ...i, selectedImage: img } : i) } : l));
@@ -386,15 +376,15 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 md:p-8" style={{ background: "#FFFFFF", backgroundImage: polkaDotBg }}>
+    <div className="min-h-screen flex items-center justify-center p-3 md:p-6" style={{ background: "#FFFFFF", backgroundImage: polkaDotBg, cursor: heartCursor }}>
 
       {/* Main card */}
-      <div className="w-full max-w-5xl rounded-[2rem] overflow-hidden shadow-2xl flex flex-col" style={{ background: "#FFE8F5", minHeight: "580px", maxHeight: "90vh", border: "3px solid #fff" }}>
+      <div className="w-full max-w-[1100px] rounded-[2rem] overflow-hidden shadow-2xl flex flex-col" style={{ background: "#FFE8F5", height: "85vh", border: "3px solid #fff" }}>
 
         {/* Top bar */}
         <div className="flex items-center justify-between px-6 py-4 flex-shrink-0" style={{ background: "#fff" }}>
           <div className="flex items-center gap-2">
-            <Heart size={20} fill="#FF1493" color="#FF1493" />
+            <img src={heartsLogo} alt="" width={28} className="select-none" draggable={false} />
             <span className="text-2xl font-semibold" style={{ fontFamily: "'Angelica', cursive", color: "#FF1493", letterSpacing: "0.02em" }}>Wishly</span>
           </div>
           <div className="flex items-center gap-2">
@@ -416,30 +406,85 @@ export default function App() {
         </div>
 
         {/* Body */}
+        {lists.length === 0 ? (
+          /* Welcome screen — shown until the first wishlist is created */
+          <div className="flex-1 flex items-center justify-center p-8">
+            <div className="text-center max-w-sm">
+              <div className="flex justify-center mb-5">
+                <img src={heartsLogo} alt="" width={230} className="select-none" draggable={false} />
+              </div>
+              <h1 className="text-3xl font-semibold mb-2" style={{ fontFamily: "'Angelica', cursive", color: "#FF1493" }}>Hi! Welcome to Wishly :))</h1>
+              <p className="text-base mb-6" style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#7A5E8A" }}>Would you like to create a new wishlist?</p>
+
+              {showNewList ? (
+                <div className="text-left p-4 rounded-2xl" style={{ background: "#fff", border: "2px solid #FFD6F0" }}>
+                  <div className="grid grid-cols-4 gap-1.5 mb-3">
+                    {LIST_ICONS.map(({ value, Icon }) => (
+                      <button key={value} onClick={() => setNewListIcon(value)} className="aspect-square rounded-xl flex items-center justify-center transition-colors"
+                        style={{ background: newListIcon === value ? "#FF1493" : "#FFE8F5", color: newListIcon === value ? "#fff" : "#FF1493" }}>
+                        <Icon size={15} />
+                      </button>
+                    ))}
+                  </div>
+                  <input value={newListName} onChange={e => setNewListName(e.target.value)} onKeyDown={e => { if (e.key === "Enter") createList(); if (e.key === "Escape") setShowNewList(false); }} placeholder="Name your wishlist..." className="w-full rounded-xl px-3 py-2 text-sm focus:outline-none mb-3" style={{ background: "#FDF5FF", border: "2px solid #FFD6F0", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }} autoFocus />
+                  <div className="flex gap-2">
+                    <button onClick={createList} className="flex-1 rounded-xl py-2 text-sm font-bold" style={{ background: "#FF1493", color: "#fff", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>Create</button>
+                    <button onClick={() => setShowNewList(false)} className="flex-1 rounded-xl py-2 text-sm font-bold" style={{ border: "2px solid #FFD6F0", color: "#FF1493", background: "#fff", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>Cancel</button>
+                  </div>
+                </div>
+              ) : (
+                <button onClick={() => setShowNewList(true)} className="rounded-2xl px-6 py-3 text-sm font-bold flex items-center gap-2 mx-auto" style={{ background: "linear-gradient(135deg, #FF1493, #FF69B4)", color: "#fff", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
+                  <Sparkles size={15} />Yes, let's create one!
+                </button>
+              )}
+            </div>
+          </div>
+        ) : (
         <div className="flex flex-1 min-h-0">
 
           {/* Left: wishlist tabs + item grid */}
-          <div className="flex flex-col w-[320px] flex-shrink-0" style={{ background: "#FFE8F5" }}>
+          <div className="flex flex-col flex-shrink-0" style={{ background: "#FFE8F5", width: selectedItem ? "50%" : "100%", transition: "width 300ms ease" }}>
             {/* List tabs */}
             <div className="px-4 pt-4 pb-2 flex-shrink-0">
               <div className="flex items-center gap-1.5 mb-3 flex-wrap">
                 {lists.map(list => (
-                  <button
-                    key={list.id}
-                    onClick={() => { setActiveListId(list.id); setSelectedItemId(list.items[0]?.id ?? null); }}
-                    className="flex items-center gap-1.5 rounded-2xl px-3 py-1.5 text-xs font-bold transition-all"
-                    style={{
-                      background: activeListId === list.id ? "#FF1493" : "#fff",
-                      color: activeListId === list.id ? "#fff" : "#FF1493",
-                      fontFamily: "'ZT Bros Oskon 90s', sans-serif",
-                      border: "2px solid",
-                      borderColor: activeListId === list.id ? "#FF1493" : "#FFD6F0",
-                    }}
-                  >
-                    <ListIcon value={list.icon} size={12} />
-                    <span className="max-w-[80px] truncate">{list.name}</span>
-                    <span className="text-xs rounded-full px-1" style={{ background: activeListId === list.id ? "rgba(255,255,255,0.3)" : "#FFE8F5", fontFamily: "'DM Mono', monospace" }}>{list.items.length}</span>
-                  </button>
+                  editingListId === list.id ? (
+                    <input
+                      key={list.id}
+                      value={editingName}
+                      onChange={e => setEditingName(e.target.value)}
+                      onKeyDown={e => { if (e.key === "Enter") saveRename(); if (e.key === "Escape") setEditingListId(null); }}
+                      onBlur={saveRename}
+                      className="rounded-2xl px-3 py-1.5 text-xs font-bold focus:outline-none"
+                      style={{ width: 120, background: "#fff", border: "2px solid #FF1493", color: "#12002A", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}
+                      autoFocus
+                    />
+                  ) : (
+                    <button
+                      key={list.id}
+                      onClick={() => { setActiveListId(list.id); setSelectedItemId(null); }}
+                      onContextMenu={e => {
+                        e.preventDefault();
+                        setActiveListId(list.id);
+                        setSelectedItemId(null);
+                        setEditingListId(list.id);
+                        setEditingName(list.name);
+                      }}
+                      title="Two-finger click to rename"
+                      className="flex items-center gap-1.5 rounded-2xl px-3 py-1.5 text-xs font-bold transition-all"
+                      style={{
+                        background: activeListId === list.id ? "#FF1493" : "#fff",
+                        color: activeListId === list.id ? "#fff" : "#FF1493",
+                        fontFamily: "'ZT Bros Oskon 90s', sans-serif",
+                        border: "2px solid",
+                        borderColor: activeListId === list.id ? "#FF1493" : "#FFD6F0",
+                      }}
+                    >
+                      <ListIcon value={list.icon} size={12} />
+                      <span className="max-w-[80px] truncate">{list.name}</span>
+                      <span className="text-xs rounded-full px-1" style={{ background: activeListId === list.id ? "rgba(255,255,255,0.3)" : "#FFE8F5", fontFamily: "'DM Mono', monospace" }}>{list.items.length}</span>
+                    </button>
+                  )
                 ))}
                 <button
                   onClick={() => setShowNewList(!showNewList)}
@@ -469,12 +514,6 @@ export default function App() {
                 </div>
               )}
 
-              {/* Edit / delete active list */}
-              {editingListId === activeListId ? (
-                <div className="flex gap-1.5 mb-2">
-                  <input value={editingName} onChange={e => setEditingName(e.target.value)} onKeyDown={e => { if (e.key === "Enter") saveRename(); if (e.key === "Escape") setEditingListId(null); }} onBlur={saveRename} className="flex-1 rounded-xl px-2.5 py-1 text-xs focus:outline-none" style={{ background: "#fff", border: "2px solid #FF1493", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }} autoFocus />
-                </div>
-              ) : null}
             </div>
 
             {/* Item grid */}
@@ -488,7 +527,7 @@ export default function App() {
                   </button>
                 </div>
               ) : (
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))" }}>
                   {activeList.items.map(item => (
                     <ItemCard
                       key={item.id} item={item} isSelected={selectedItem?.id === item.id}
@@ -507,9 +546,9 @@ export default function App() {
             </div>
           </div>
 
-          {/* Right: item detail panel */}
-          <div className="flex-1 flex flex-col min-w-0 rounded-[1.5rem] m-3 overflow-hidden" style={{ background: "#fff" }}>
-            {selectedItem ? (
+          {/* Right: item detail panel — only takes up space once an item is selected */}
+          {selectedItem && (
+            <div className="flex-1 flex flex-col min-w-0 rounded-[1.5rem] m-3 overflow-hidden" style={{ background: "#fff" }}>
               <>
                 {/* Big image */}
                 <div className="relative flex-shrink-0" style={{ height: "260px", background: "#FFE8F5" }}>
@@ -524,6 +563,9 @@ export default function App() {
                     </button>
                     <button onClick={() => deleteItem(selectedItem.id)} className="w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm" style={{ background: "rgba(255,255,255,0.9)", border: "2px solid #FFD6F0" }}>
                       <Trash2 size={13} color="#FF1493" />
+                    </button>
+                    <button onClick={() => setSelectedItemId(null)} className="w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm" style={{ background: "rgba(255,255,255,0.9)", border: "2px solid #FFD6F0" }} title="Back to grid">
+                      <X size={13} color="#FF1493" />
                     </button>
                   </div>
                   {/* list name + rename/delete */}
@@ -573,23 +615,10 @@ export default function App() {
                   </button>
                 </div>
               </>
-            ) : (
-              /* Empty state */
-              <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-                <div className="w-20 h-20 rounded-3xl flex items-center justify-center mb-4" style={{ background: "linear-gradient(135deg, #FFE8F5, #E8FDF9)" }}>
-                  <Heart size={36} fill="#FF1493" color="#FF1493" />
-                </div>
-                <h3 className="text-2xl font-semibold mb-2" style={{ fontFamily: "'Angelica', cursive", color: "#FF1493" }}>Start your wishlist!</h3>
-                <p className="text-sm mb-6" style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#C0A0B0", maxWidth: "220px" }}>
-                  Paste any product link and we will find photos and prices for you.
-                </p>
-                <button onClick={() => setShowAddItem(true)} className="rounded-2xl px-6 py-3 text-sm font-bold flex items-center gap-2" style={{ background: "linear-gradient(135deg, #FF1493, #FF69B4)", color: "#fff", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
-                  <Sparkles size={15} />Add your first item
-                </button>
-              </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
+        )}
       </div>
 
       {/* Modals */}
