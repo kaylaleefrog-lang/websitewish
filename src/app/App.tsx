@@ -383,8 +383,7 @@ export default function App() {
         {/* Top bar */}
         <div className="flex items-center justify-between px-6 py-4 flex-shrink-0" style={{ background: "#fff" }}>
           <div className="flex items-center gap-2">
-            <Heart size={20} fill="#FF1493" color="#FF1493" />
-            <span className="text-2xl font-semibold" style={{ fontFamily: "'Angelica', cursive", color: "#FF1493", letterSpacing: "0.02em" }}>Wishly</span>
+            <span style={{ fontFamily: "'Swirly Kids', cursive", fontSize: "60px", lineHeight: 1, color: "#FF1493" }}>Wishly</span>
           </div>
           <div className="flex items-center gap-2">
             <button onClick={() => setShowShare(true)} className="flex items-center gap-1.5 rounded-2xl px-4 py-2 text-sm font-bold transition-all" style={{ background: "#fff", border: "2px solid #FFD6F0", color: "#FF1493", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
