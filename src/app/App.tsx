@@ -89,40 +89,6 @@ function fmt(n: number) { return "$" + n.toFixed(2); }
 // ─── Polka dot background ─────────────────────────────────────────────────────
 const polkaDotBg = `url("data:image/svg+xml,%3Csvg width='48' height='48' viewBox='0 0 48 48' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='24' cy='24' r='5.5' fill='%2342FAE1' fill-opacity='0.35'/%3E%3C/svg%3E")`;
 
-// ─── Spiral notebook rings (left edge, like a real spiral-bound notebook) ─────
-const RING_COUNT = 16;
-function SpiralRings() {
-  return (
-    <div
-      className="absolute top-0 bottom-0 flex flex-col justify-around py-6 md:py-8 pointer-events-none"
-      style={{ left: 0, transform: "translateX(-50%)", zIndex: 20 }}
-    >
-      {Array.from({ length: RING_COUNT }).map((_, i) => (
-        <div key={i} className="relative flex-shrink-0" style={{ width: 26, height: 26 }}>
-          {/* the wire loop itself */}
-          <div className="absolute inset-0 rounded-full" style={{
-            border: "4px solid #8C8C96",
-            boxShadow: "1px 2px 2px rgba(0,0,0,0.3)",
-          }} />
-          {/* highlight sheen so the wire reads as round metal, not a flat ring */}
-          <div className="absolute rounded-full" style={{
-            top: 2, left: 2, width: 12, height: 12,
-            borderTop: "2px solid rgba(255,255,255,0.9)",
-            borderLeft: "2px solid rgba(255,255,255,0.9)",
-            borderRight: "2px solid transparent",
-            borderBottom: "2px solid transparent",
-          }} />
-          {/* rivet / hole where the wire crosses into the paper */}
-          <div className="absolute rounded-full" style={{
-            width: 5.5, height: 5.5, left: 5, top: "50%", transform: "translateY(-50%)",
-            background: "#2b2b31",
-          }} />
-        </div>
-      ))}
-    </div>
-  );
-}
-
 // ─── Subcomponents ────────────────────────────────────────────────────────────
 function SaleBadge({ pct }: { pct: number }) {
   return (
@@ -422,12 +388,8 @@ export default function App() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 md:p-8" style={{ background: "#FFFFFF", backgroundImage: polkaDotBg }}>
 
-      {/* Notebook */}
-      <div className="relative w-full max-w-5xl pl-3">
-        <SpiralRings />
-
-        {/* Notebook cover / main card */}
-        <div className="rounded-r-[2rem] rounded-l-xl overflow-hidden shadow-2xl flex flex-col" style={{ background: "#FFE8F5", minHeight: "580px", maxHeight: "90vh", border: "3px solid #fff", borderLeft: "10px solid #FFB6D9" }}>
+      {/* Main card */}
+      <div className="w-full max-w-5xl rounded-[2rem] overflow-hidden shadow-2xl flex flex-col" style={{ background: "#FFE8F5", minHeight: "580px", maxHeight: "90vh", border: "3px solid #fff" }}>
 
         {/* Top bar */}
         <div className="flex items-center justify-between px-6 py-4 flex-shrink-0" style={{ background: "#fff" }}>
@@ -627,7 +589,6 @@ export default function App() {
               </div>
             )}
           </div>
-        </div>
         </div>
       </div>
 
