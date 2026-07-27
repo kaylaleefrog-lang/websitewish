@@ -89,6 +89,9 @@ function fmt(n: number) { return "$" + n.toFixed(2); }
 // ─── Polka dot background ─────────────────────────────────────────────────────
 const polkaDotBg = `url("data:image/svg+xml,%3Csvg width='48' height='48' viewBox='0 0 48 48' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='24' cy='24' r='5.5' fill='%2342FAE1' fill-opacity='0.35'/%3E%3C/svg%3E")`;
 
+// ─── Custom heart cursor ───────────────────────────────────────────────────────
+const heartCursor = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cpath d='M14 24C14 24 3 17 3 10C3 6 6 3 10 3C12 3 13.5 4.5 14 6C14.5 4.5 16 3 18 3C22 3 25 6 25 10C25 17 14 24 14 24Z' fill='%23FF1493' stroke='white' stroke-width='1.5'/%3E%3C/svg%3E") 4 2, auto`;
+
 // ─── Subcomponents ────────────────────────────────────────────────────────────
 function SaleBadge({ pct }: { pct: number }) {
   return (
@@ -386,10 +389,10 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-2 md:p-4" style={{ background: "#FFFFFF", backgroundImage: polkaDotBg }}>
+    <div className="min-h-screen flex items-center justify-center p-3 md:p-6" style={{ background: "#FFFFFF", backgroundImage: polkaDotBg, cursor: heartCursor }}>
 
       {/* Main card */}
-      <div className="w-full max-w-[1600px] rounded-[2rem] overflow-hidden shadow-2xl flex flex-col" style={{ background: "#FFE8F5", height: "95vh", border: "3px solid #fff" }}>
+      <div className="w-full max-w-[1280px] rounded-[2rem] overflow-hidden shadow-2xl flex flex-col" style={{ background: "#FFE8F5", height: "90vh", border: "3px solid #fff" }}>
 
         {/* Top bar */}
         <div className="flex items-center justify-between px-6 py-4 flex-shrink-0" style={{ background: "#fff" }}>

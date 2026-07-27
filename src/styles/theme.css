@@ -137,6 +137,12 @@
     font-size: var(--font-size);
   }
 
+  /* Let the custom heart cursor set on the app root show through on
+     interactive elements too, instead of the browser's default arrow. */
+  button, a, input, textarea, [role="button"] {
+    cursor: inherit;
+  }
+
   h1 {
     font-size: var(--text-2xl);
     font-weight: var(--font-weight-medium);
