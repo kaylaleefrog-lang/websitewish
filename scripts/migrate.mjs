@@ -12,12 +12,9 @@
 // actually create tables.
 import { readFileSync } from "node:fs";
 import { Client } from "@neondatabase/serverless";
+import { getConnectionString } from "../api/_lib/connectionString.js";
 
-const connectionString =
-  process.env.DATABASE_URL ||
-  process.env.POSTGRES_URL ||
-  process.env.DATABASE_URL_UNPOOLED ||
-  process.env.POSTGRES_URL_NON_POOLING;
+const connectionString = getConnectionString();
 
 if (!connectionString) {
   console.error("Set DATABASE_URL (or POSTGRES_URL) before running this script.");
