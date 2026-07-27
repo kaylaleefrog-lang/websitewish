@@ -417,27 +417,29 @@ export default function App() {
       <div className="w-full max-w-[1100px] rounded-[2rem] overflow-hidden shadow-2xl flex flex-col" style={{ background: "#FFE8F5", height: "85vh", border: "3px solid #fff" }}>
 
         {/* Top bar */}
-        <div className="flex items-center justify-between px-6 py-4 flex-shrink-0" style={{ background: "#fff" }}>
+        <div className={`flex items-center px-6 py-4 flex-shrink-0 ${lists.length === 0 ? "justify-center" : "justify-between"}`} style={{ background: "#fff" }}>
           <div className="flex items-center gap-2">
             <img src={heartsLogo} alt="" width={28} className="select-none" draggable={false} />
             <span className="text-2xl font-semibold" style={{ fontFamily: "'Angelica', cursive", color: "#FF1493", letterSpacing: "0.02em" }}>Wishly</span>
           </div>
-          <div className="flex items-center gap-2">
-            <button onClick={() => setShowShare(true)} className="flex items-center gap-1.5 rounded-2xl px-4 py-2 text-sm font-bold transition-all" style={{ background: "#fff", border: "2px solid #FFD6F0", color: "#FF1493", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
-              <Share2 size={14} /> Share
-            </button>
-            <div className="relative">
-              <button onClick={() => setShowNotifs(!showNotifs)} className="relative w-9 h-9 rounded-full flex items-center justify-center transition-all" style={{ background: "#FFF5FD", border: "2px solid #FFD6F0" }}>
-                <Bell size={16} color="#FF1493" />
-                {unreadCount > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "#42FAE1", color: "#006B5E", fontFamily: "'DM Mono', monospace" }}>{unreadCount}</span>}
+          {lists.length > 0 && (
+            <div className="flex items-center gap-2">
+              <button onClick={() => setShowShare(true)} className="flex items-center gap-1.5 rounded-2xl px-4 py-2 text-sm font-bold transition-all" style={{ background: "#fff", border: "2px solid #FFD6F0", color: "#FF1493", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
+                <Share2 size={14} /> Share
               </button>
-              {showNotifs && (
-                <div onClick={() => setShowNotifs(false)} className="fixed inset-0 z-30">
-                  <NotificationsPanel notifications={notifications} onMarkRead={id => setNotifications(ns => ns.map(n => n.id === id ? { ...n, read: true } : n))} onClose={() => setShowNotifs(false)} />
-                </div>
-              )}
+              <div className="relative">
+                <button onClick={() => setShowNotifs(!showNotifs)} className="relative w-9 h-9 rounded-full flex items-center justify-center transition-all" style={{ background: "#FFF5FD", border: "2px solid #FFD6F0" }}>
+                  <Bell size={16} color="#FF1493" />
+                  {unreadCount > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "#42FAE1", color: "#006B5E", fontFamily: "'DM Mono', monospace" }}>{unreadCount}</span>}
+                </button>
+                {showNotifs && (
+                  <div onClick={() => setShowNotifs(false)} className="fixed inset-0 z-30">
+                    <NotificationsPanel notifications={notifications} onMarkRead={id => setNotifications(ns => ns.map(n => n.id === id ? { ...n, read: true } : n))} onClose={() => setShowNotifs(false)} />
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Body */}
