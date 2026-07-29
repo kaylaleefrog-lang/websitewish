@@ -46,7 +46,7 @@ export default function PublicListPage({ listId }: { listId: string }) {
     <div className="min-h-screen" style={{ background: "#FFFFFF", backgroundImage: polkaDotBg, cursor: heartCursor }}>
       <div className="flex items-center gap-2 px-6 py-5">
         <img src={heartsLogo} alt="" width={32} className="select-none" draggable={false} />
-        <span className="text-xl font-semibold" style={{ fontFamily: "'Angelica', cursive", color: "#FF1493" }}>Wishly</span>
+        <span className="text-xl font-semibold" style={{ fontFamily: "'Kiwi Soda', cursive", color: "#FF1493" }}>Wishly</span>
       </div>
 
       {error ? (
@@ -62,7 +62,7 @@ export default function PublicListPage({ listId }: { listId: string }) {
         <div className="max-w-4xl mx-auto px-6 pb-16">
           <div className="flex items-center gap-2 mb-1">
             <span className="text-pink-500"><ListIcon value={list.icon} size={20} /></span>
-            <h1 className="text-2xl font-semibold" style={{ fontFamily: "'Angelica', cursive", color: "#12002A" }}>{list.name}</h1>
+            <h1 className="text-2xl font-semibold" style={{ fontFamily: "'Kiwi Soda', cursive", color: "#12002A" }}>{list.name}</h1>
           </div>
           <p className="text-sm mb-6" style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", color: "#7A5E8A" }}>
             {list.items.length} item{list.items.length !== 1 ? "s" : ""} &middot; check off what you're getting them so no one doubles up
@@ -101,7 +101,7 @@ export default function PublicListPage({ listId }: { listId: string }) {
                       </button>
                     </div>
                     <div className="p-2.5">
-                      <p className="text-xs font-bold leading-snug line-clamp-2 mb-1" style={{ fontFamily: "'Angelica', cursive", color: "#12002A", minHeight: "2.75em" }}>{item.title}</p>
+                      <p className="text-xs font-bold leading-snug line-clamp-2 mb-1" style={{ fontFamily: "'Kiwi Soda', cursive", color: "#12002A", minHeight: "2.75em" }}>{item.title}</p>
                       <div className="flex items-center gap-1.5" style={{ minHeight: "1.375em" }}>
                         {item.price !== null && <span className="text-xs font-bold" style={{ fontFamily: "'DM Mono', monospace", color: "#FF1493" }}>{fmt(item.price)}</span>}
                         {item.onSale && item.originalPrice && item.originalPrice !== item.price && (
