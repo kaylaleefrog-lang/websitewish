@@ -762,20 +762,20 @@ export default function App() {
 
         {/* Top bar */}
         <div className="flex items-center justify-between px-6 py-0.5 flex-shrink-0" style={{ background: "#fff" }}>
-          <div className="flex items-center gap-2">
-            <img src={heartsLogo} alt="" width={28} className="select-none" draggable={false} />
-            <span className="text-2xl font-semibold" style={{ fontFamily: "'Kiwi Soda', cursive", color: "#FF1493", letterSpacing: "0.02em" }}>Wishly</span>
+          <div className="flex items-center gap-1.5">
+            <img src={heartsLogo} alt="" width={20} className="select-none" draggable={false} />
+            <span className="text-lg font-semibold" style={{ fontFamily: "'Kiwi Soda', cursive", color: "#FF1493", letterSpacing: "0.02em" }}>Wishly</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             {lists.length > 0 && (
               <>
-                <button onClick={() => setShowShare(true)} className="flex items-center gap-1.5 rounded-2xl px-4 py-2 text-sm font-bold transition-all" style={{ background: "#fff", border: "2px solid #FFD6F0", color: "#FF1493", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
-                  <Share2 size={14} /> Share
+                <button onClick={() => setShowShare(true)} className="flex items-center gap-1 rounded-2xl px-3 py-1.5 text-xs font-bold transition-all" style={{ background: "#fff", border: "2px solid #FFD6F0", color: "#FF1493", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
+                  <Share2 size={12} /> Share
                 </button>
                 <div className="relative">
-                  <button onClick={() => setShowNotifs(!showNotifs)} className="relative w-9 h-9 rounded-full flex items-center justify-center transition-all" style={{ background: "#FFF5FD", border: "2px solid #FFD6F0" }}>
-                    <Bell size={16} color="#FF1493" />
-                    {unreadCount > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "#42FAE1", color: "#006B5E", fontFamily: "'DM Mono', monospace" }}>{unreadCount}</span>}
+                  <button onClick={() => setShowNotifs(!showNotifs)} className="relative w-7 h-7 rounded-full flex items-center justify-center transition-all" style={{ background: "#FFF5FD", border: "2px solid #FFD6F0" }}>
+                    <Bell size={13} color="#FF1493" />
+                    {unreadCount > 0 && <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full flex items-center justify-center text-[10px] font-bold" style={{ background: "#42FAE1", color: "#006B5E", fontFamily: "'DM Mono', monospace" }}>{unreadCount}</span>}
                   </button>
                   {showNotifs && (
                     <div onClick={() => setShowNotifs(false)} className="fixed inset-0 z-30">
@@ -786,15 +786,15 @@ export default function App() {
               </>
             )}
             {user?.email ? (
-              <button onClick={handleLogout} title={`Log out (${user.email})`} className="w-9 h-9 rounded-full flex items-center justify-center transition-all" style={{ background: "#FFF5FD", border: "2px solid #FFD6F0" }}>
-                <LogOut size={15} color="#FF1493" />
+              <button onClick={handleLogout} title={`Log out (${user.email})`} className="w-7 h-7 rounded-full flex items-center justify-center transition-all" style={{ background: "#FFF5FD", border: "2px solid #FFD6F0" }}>
+                <LogOut size={13} color="#FF1493" />
               </button>
             ) : user ? (
-              <button onClick={() => setShowAuthOverlay("signup")} className="rounded-2xl px-4 py-2 text-sm font-bold transition-all" style={{ background: "linear-gradient(135deg, #FF1493, #FF69B4)", color: "#fff", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
+              <button onClick={() => setShowAuthOverlay("signup")} className="rounded-2xl px-3 py-1.5 text-xs font-bold transition-all" style={{ background: "linear-gradient(135deg, #FF1493, #FF69B4)", color: "#fff", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
                 Sign up
               </button>
             ) : (
-              <button onClick={() => setShowAuthOverlay("login")} className="rounded-2xl px-4 py-2 text-sm font-bold transition-all" style={{ background: "#fff", border: "2px solid #FFD6F0", color: "#FF1493", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
+              <button onClick={() => setShowAuthOverlay("login")} className="rounded-2xl px-3 py-1.5 text-xs font-bold transition-all" style={{ background: "#fff", border: "2px solid #FFD6F0", color: "#FF1493", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>
                 Log in
               </button>
             )}
