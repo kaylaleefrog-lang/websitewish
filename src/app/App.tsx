@@ -761,7 +761,7 @@ export default function App() {
       <div className="w-full max-w-[1100px] rounded-[2rem] overflow-hidden shadow-2xl flex flex-col" style={{ background: "#FFE8F5", height: "85vh", border: "3px solid #fff" }}>
 
         {/* Top bar */}
-        <div className="flex items-center justify-between px-6 py-1.5 flex-shrink-0" style={{ background: "#fff" }}>
+        <div className="flex items-center justify-between px-6 py-0.5 flex-shrink-0" style={{ background: "#fff" }}>
           <div className="flex items-center gap-2">
             <img src={heartsLogo} alt="" width={28} className="select-none" draggable={false} />
             <span className="text-2xl font-semibold" style={{ fontFamily: "'Angelica', cursive", color: "#FF1493", letterSpacing: "0.02em" }}>Wishly</span>
@@ -863,7 +863,7 @@ export default function App() {
                       autoFocus
                     />
                   ) : (
-                    <button
+                    <div
                       key={list.id}
                       onClick={() => { setActiveListId(list.id); setSelectedItemId(null); }}
                       onContextMenu={e => {
@@ -874,7 +874,7 @@ export default function App() {
                         setEditingName(list.name);
                       }}
                       title="Two-finger click to rename"
-                      className="flex items-center gap-1.5 rounded-2xl px-3 py-1.5 text-xs font-bold transition-all"
+                      className="flex items-center gap-1.5 rounded-2xl pl-3 pr-1.5 py-1.5 text-xs font-bold transition-all cursor-pointer"
                       style={{
                         background: activeListId === list.id ? "#FF1493" : "#fff",
                         color: activeListId === list.id ? "#fff" : "#FF1493",
@@ -886,7 +886,15 @@ export default function App() {
                       <ListIcon value={list.icon} size={12} />
                       <span className="max-w-[80px] truncate">{list.name}</span>
                       <span className="text-xs rounded-full px-1" style={{ background: activeListId === list.id ? "rgba(255,255,255,0.3)" : "#FFE8F5", fontFamily: "'DM Mono', monospace" }}>{list.items.length}</span>
-                    </button>
+                      <button
+                        onClick={e => { e.stopPropagation(); deleteList(list.id); }}
+                        title="Delete this wishlist"
+                        className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 transition-colors"
+                        style={{ background: activeListId === list.id ? "rgba(255,255,255,0.3)" : "#FFE8F5" }}
+                      >
+                        <X size={9} />
+                      </button>
+                    </div>
                   )
                 ))}
                 <button
