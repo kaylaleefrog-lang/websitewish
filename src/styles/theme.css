@@ -126,6 +126,13 @@
 
   body {
     @apply bg-background text-foreground;
+    text-transform: lowercase;
+  }
+
+  /* Form controls don't inherit text-transform by default in browsers,
+     so the lowercase rule above needs to be repeated for them. */
+  button, input, select, textarea {
+    text-transform: lowercase;
   }
 
   /**
