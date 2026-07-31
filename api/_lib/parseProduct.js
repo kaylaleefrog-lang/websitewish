@@ -118,6 +118,25 @@ function extractPricing(offers) {
   return { price, originalPrice };
 }
 
+// Same structured-data sources as extractPricing, but for the ISO 4217
+// currency code so a non-US price can be converted to USD before it's
+// ever shown to the user.
+function extractCurrency(meta, offers) {
+  const list = offers ? (Array.isArray(offers) ? offers : [offers]) : [];
+  for (const o of list) {
+    if (typeof o.priceCurrency === "string" && o.priceCurrency.trim()) return o.priceCurrency.trim().toUpperCase();
+    const specs = o.priceSpecification
+      ? Array.isArray(o.priceSpecification) ? o.priceSpecification : [o.priceSpecification]
+      : [];
+    for (const spec of specs) {
+      if (typeof spec.priceCurrency === "string" && spec.priceCurrency.trim()) return spec.priceCurrency.trim().toUpperCase();
+    }
+  }
+  const metaCurrency =
+    meta["product:price:currency"] || meta["og:price:currency"] || meta["product:sale_price:currency"];
+  return metaCurrency ? metaCurrency.trim().toUpperCase() : null;
+}
+
 function toAbsoluteUrl(maybeRelative, baseUrl) {
   try {
     return new URL(maybeRelative, baseUrl).toString();
@@ -183,6 +202,8 @@ export function parseProductFromHtml(html, baseUrl) {
   }
   if (originalPrice != null && price != null && originalPrice <= price) originalPrice = null;
 
+  const currency = extractCurrency(meta, product?.offers) || "USD";
+
   const store = meta["og:site_name"] || (() => {
     try {
       return new URL(baseUrl).hostname.replace(/^www\./, "");
@@ -197,6 +218,7 @@ export function parseProductFromHtml(html, baseUrl) {
     images,
     price: price != null && !isNaN(price) ? price : null,
     originalPrice: originalPrice != null && !isNaN(originalPrice) ? originalPrice : null,
+    currency,
     store,
   };
 }

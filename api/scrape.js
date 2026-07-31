@@ -1,4 +1,5 @@
 import { parseProductFromHtml } from "./_lib/parseProduct.js";
+import { convertToUsd } from "./_lib/convertCurrency.js";
 
 const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
@@ -98,6 +99,17 @@ export default async function handler(req, res) {
   } catch {
     res.status(500).json({ error: "Couldn't read that page's product details" });
     return;
+  }
+
+  // Everything downstream (display, sale-percent math, sorting) assumes
+  // USD, so convert here rather than carrying the source currency through
+  // the whole app.
+  if (product.currency && product.currency !== "USD") {
+    const [price, originalPrice] = await Promise.all([
+      convertToUsd(product.price, product.currency),
+      convertToUsd(product.originalPrice, product.currency),
+    ]);
+    product = { ...product, price, originalPrice };
   }
 
   const onSale = product.originalPrice != null && product.price != null && product.originalPrice > product.price;
