@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import {
   Plus, X, Share2, Bell, Heart, ExternalLink, Tag, Check,
   Copy, Trash2, Edit3, AlertCircle, Sparkles, ImageOff, LayoutGrid, List,
   Gift, Home, Star, Shirt, BookOpen, Leaf, Palette, ShoppingBag, Search, LogOut,
-  Footprints, Watch, Glasses, Gem, PartyPopper, Cake, TreePine, Music, Gamepad2, Camera
+  Footprints, Watch, Glasses, Gem, PartyPopper, Cake, TreePine, Music, Gamepad2, Camera, MoreHorizontal
 } from "lucide-react";
 import heartsLogo from "../assets/images/hearts-logo.png";
 
@@ -130,6 +130,9 @@ async function apiRenameList(id: string, name: string, icon: string): Promise<Wi
 }
 async function apiDeleteList(id: string): Promise<void> {
   await apiFetch(`/api/lists/${id}`, { method: "DELETE" });
+}
+async function apiReorderLists(order: string[]): Promise<void> {
+  await apiFetch("/api/lists", { method: "PATCH", body: JSON.stringify({ order }) });
 }
 async function apiCreateItem(payload: Record<string, unknown>): Promise<WishlistItem> {
   const data = await apiFetch("/api/items", { method: "POST", body: JSON.stringify(payload) });
@@ -644,6 +647,11 @@ export default function App() {
   const [sortBy, setSortBy] = useState<"default" | "priority" | "price-asc" | "price-desc">("default");
   const [showAuthOverlay, setShowAuthOverlay] = useState<false | "login" | "signup">(false);
   const [showSaveNag, setShowSaveNag] = useState(false);
+  const [draggedListId, setDraggedListId] = useState<string | null>(null);
+  const [showTabOverflow, setShowTabOverflow] = useState(false);
+  const [visibleTabCount, setVisibleTabCount] = useState(Infinity);
+  const tabsRowRef = useRef<HTMLDivElement>(null);
+  const tabsMeasureRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchMe().then(setUser).catch(() => setUser(null)).finally(() => setAuthChecked(true));
@@ -657,6 +665,42 @@ export default function App() {
       .catch(err => setActionError(err instanceof Error ? err.message : "Couldn't load your wishlists"))
       .finally(() => setListsLoading(false));
   }, [user]);
+
+  // Measures how many wishlist tabs actually fit on one row (against an
+  // off-screen clone), so the rest can be tucked behind the "..." button
+  // instead of wrapping to a second row.
+  useLayoutEffect(() => {
+    function measure() {
+      const container = tabsRowRef.current;
+      const measureRow = tabsMeasureRef.current;
+      if (!container || !measureRow) return;
+      const gap = 6;
+      const buttonSpace = 28 + gap; // the "+" and "..." buttons are fixed w-7 h-7 circles
+      const widths = Array.from(measureRow.children).map(c => (c as HTMLElement).offsetWidth);
+      const available = container.clientWidth;
+
+      const totalWithAddButton = widths.reduce((sum, w) => sum + w + gap, 0) + buttonSpace;
+      if (totalWithAddButton <= available) {
+        setVisibleTabCount(widths.length);
+        return;
+      }
+
+      const budget = available - buttonSpace * 2; // reserve room for both "+" and "..."
+      let used = 0;
+      let count = 0;
+      for (const w of widths) {
+        const next = used + w + gap;
+        if (next > budget) break;
+        used = next;
+        count++;
+      }
+      setVisibleTabCount(count);
+    }
+    measure();
+    const ro = new ResizeObserver(measure);
+    if (tabsRowRef.current) ro.observe(tabsRowRef.current);
+    return () => ro.disconnect();
+  }, [lists]);
 
   async function handleLogout() {
     try { await apiLogout(); } catch { /* clear local state regardless */ }
@@ -746,6 +790,10 @@ export default function App() {
     } catch (err) {
       setActionError(err instanceof Error ? err.message : "Couldn't delete that list");
     }
+  }
+  function reorderLists(newOrder: Wishlist[]) {
+    setLists(newOrder);
+    apiReorderLists(newOrder.map(l => l.id)).catch(err => setActionError(err instanceof Error ? err.message : "Couldn't save that order"));
   }
   async function saveRename() {
     if (!editingName.trim() || !editingListId) { setEditingListId(null); return; }
@@ -855,8 +903,19 @@ export default function App() {
           <div className="flex flex-col flex-shrink-0" style={{ background: "#FFE8F5", width: selectedItem ? "50%" : "100%", transition: "width 300ms ease" }}>
             {/* List tabs */}
             <div className="px-4 pt-4 pb-2 flex-shrink-0">
-              <div className="flex items-center gap-1.5 mb-3 flex-wrap">
+              {/* Off-screen clone used only to measure how many tabs fit in one row */}
+              <div ref={tabsMeasureRef} aria-hidden="true" style={{ position: "absolute", top: -9999, left: 0, visibility: "hidden", display: "flex", gap: 6, whiteSpace: "nowrap" }}>
                 {lists.map(list => (
+                  <div key={list.id} className="flex items-center gap-1.5 rounded-2xl pl-3 pr-1.5 py-1.5 text-xs font-bold" style={{ fontFamily: "'ZT Bros Oskon 90s', sans-serif", border: "2px solid transparent" }}>
+                    <ListIcon value={list.icon} size={12} />
+                    <span className="max-w-[80px] truncate">{list.name}</span>
+                    <span className="text-xs rounded-full px-1" style={{ fontFamily: "'DM Mono', monospace" }}>{list.items.length}</span>
+                    <span className="w-4 h-4 rounded-full flex-shrink-0" />
+                  </div>
+                ))}
+              </div>
+              <div ref={tabsRowRef} className="flex items-center gap-1.5 mb-3 flex-nowrap">
+                {lists.slice(0, visibleTabCount).map(list => (
                   editingListId === list.id ? (
                     <div key={list.id} className="relative">
                       <div onClick={saveRename} className="fixed inset-0 z-30" />
@@ -890,6 +949,23 @@ export default function App() {
                   ) : (
                     <div
                       key={list.id}
+                      draggable
+                      onDragStart={() => setDraggedListId(list.id)}
+                      onDragOver={e => {
+                        e.preventDefault();
+                        if (!draggedListId || draggedListId === list.id) return;
+                        const from = lists.findIndex(l => l.id === draggedListId);
+                        const to = lists.findIndex(l => l.id === list.id);
+                        if (from === -1 || to === -1 || from === to) return;
+                        const next = [...lists];
+                        const [moved] = next.splice(from, 1);
+                        next.splice(to, 0, moved);
+                        setLists(next);
+                      }}
+                      onDragEnd={() => {
+                        setDraggedListId(null);
+                        apiReorderLists(lists.map(l => l.id)).catch(err => setActionError(err instanceof Error ? err.message : "Couldn't save that order"));
+                      }}
                       onClick={() => { setActiveListId(list.id); setSelectedItemId(null); }}
                       onDoubleClick={() => {
                         setActiveListId(list.id);
@@ -906,7 +982,7 @@ export default function App() {
                         setEditingName(list.name);
                         setEditingIcon(list.icon);
                       }}
-                      title="Double click (or two-finger click) to rename"
+                      title="Drag to reorder — double click (or two-finger click) to rename"
                       className="flex items-center gap-1.5 rounded-2xl pl-3 pr-1.5 py-1.5 text-xs font-bold transition-all cursor-pointer"
                       style={{
                         background: activeListId === list.id ? "#FF1493" : "#fff",
@@ -914,6 +990,7 @@ export default function App() {
                         fontFamily: "'ZT Bros Oskon 90s', sans-serif",
                         border: "2px solid",
                         borderColor: activeListId === list.id ? "#FF1493" : "#FFD6F0",
+                        opacity: draggedListId === list.id ? 0.4 : 1,
                       }}
                     >
                       <ListIcon value={list.icon} size={12} />
@@ -930,6 +1007,43 @@ export default function App() {
                     </div>
                   )
                 ))}
+                {lists.length > visibleTabCount && (
+                  <div className="relative flex-shrink-0">
+                    <button
+                      onClick={() => setShowTabOverflow(v => !v)}
+                      title={`${lists.length - visibleTabCount} more wishlist${lists.length - visibleTabCount !== 1 ? "s" : ""}`}
+                      className="w-7 h-7 rounded-full flex items-center justify-center transition-all"
+                      style={{ background: "#fff", border: "2px solid #FFD6F0", color: "#FF1493" }}
+                    >
+                      <MoreHorizontal size={14} />
+                    </button>
+                    {showTabOverflow && (
+                      <>
+                        <div onClick={() => setShowTabOverflow(false)} className="fixed inset-0 z-30" />
+                        <div className="absolute top-full left-0 mt-2 z-40 py-1.5 rounded-2xl shadow-xl max-h-64 overflow-y-auto" style={{ width: 180, background: "#fff", border: "2px solid #FFD6F0" }}>
+                          {lists.slice(visibleTabCount).map(list => (
+                            <button
+                              key={list.id}
+                              onClick={() => {
+                                setActiveListId(list.id);
+                                setSelectedItemId(null);
+                                setShowTabOverflow(false);
+                                const rest = lists.filter(l => l.id !== list.id);
+                                reorderLists([list, ...rest]);
+                              }}
+                              className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold transition-colors hover:bg-pink-50"
+                              style={{ color: "#12002A", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}
+                            >
+                              <span className="text-pink-500 flex-shrink-0"><ListIcon value={list.icon} size={13} /></span>
+                              <span className="flex-1 text-left truncate">{list.name}</span>
+                              <span className="text-xs rounded-full px-1.5" style={{ background: "#FFE8F5", color: "#FF1493", fontFamily: "'DM Mono', monospace" }}>{list.items.length}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
                 <button
                   onClick={() => setShowNewList(!showNewList)}
                   className="w-7 h-7 rounded-full flex items-center justify-center transition-all"

@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS wishlists (
   user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   icon TEXT NOT NULL,
+  position INTEGER NOT NULL DEFAULT 0,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
@@ -53,6 +54,12 @@ ALTER TABLE items ADD COLUMN IF NOT EXISTS claimed BOOLEAN NOT NULL DEFAULT fals
 -- Same idea for a database created before guest accounts existed.
 ALTER TABLE users ALTER COLUMN email DROP NOT NULL;
 ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL;
+
+-- Same idea for a database created before drag-to-reorder existed. New
+-- rows all default to 0, which is fine — the ORDER BY below falls back to
+-- created_at whenever positions tie, so existing lists keep their order
+-- until someone actually drags one.
+ALTER TABLE wishlists ADD COLUMN IF NOT EXISTS position INTEGER NOT NULL DEFAULT 0;
 
 CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_wishlists_user_id ON wishlists(user_id);
