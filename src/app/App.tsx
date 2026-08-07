@@ -817,7 +817,7 @@ export default function App() {
         {/* Top bar */}
         <div className="flex items-center justify-between px-6 py-0.5 flex-shrink-0" style={{ background: "#fff" }}>
           <div className="flex items-center gap-1.5">
-            <img src={heartsLogo} alt="" width={20} className="select-none" draggable={false} />
+            <img src={heartsLogo} alt="" width={28} className="select-none" draggable={false} />
             <span className="text-lg font-semibold" style={{ fontFamily: "'Kiwi Soda', cursive", color: "#FF1493", letterSpacing: "0.02em" }}>Wishly</span>
           </div>
           <div className="flex items-center gap-1.5">
