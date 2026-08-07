@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import {
   Plus, X, Share2, Bell, Heart, ExternalLink, Tag, Check,
   Copy, Trash2, Edit3, AlertCircle, Sparkles, ImageOff, LayoutGrid, List,
-  Gift, Home, Star, Shirt, BookOpen, Leaf, Palette, ShoppingBag, Search, LogOut
+  Gift, Home, Star, Shirt, BookOpen, Leaf, Palette, ShoppingBag, Search, LogOut,
+  Footprints, Watch, Glasses, Gem, PartyPopper, Cake, TreePine, Music, Gamepad2, Camera
 } from "lucide-react";
 import heartsLogo from "../assets/images/hearts-logo.png";
 
@@ -123,8 +124,8 @@ async function apiCreateList(name: string, icon: string): Promise<Wishlist> {
   const data = await apiFetch("/api/lists", { method: "POST", body: JSON.stringify({ name, icon }) });
   return data.list;
 }
-async function apiRenameList(id: string, name: string): Promise<Wishlist> {
-  const data = await apiFetch(`/api/lists/${id}`, { method: "PATCH", body: JSON.stringify({ name }) });
+async function apiRenameList(id: string, name: string, icon: string): Promise<Wishlist> {
+  const data = await apiFetch(`/api/lists/${id}`, { method: "PATCH", body: JSON.stringify({ name, icon }) });
   return data.list;
 }
 async function apiDeleteList(id: string): Promise<void> {
@@ -145,8 +146,11 @@ async function apiDeleteItem(id: string): Promise<void> {
 // ─── Seed data ────────────────────────────────────────────────────────────────
 export const LIST_ICONS: { value: string; Icon: React.ElementType }[] = [
   { value: "gift", Icon: Gift }, { value: "home", Icon: Home }, { value: "star", Icon: Star },
-  { value: "shirt", Icon: Shirt }, { value: "book", Icon: BookOpen }, { value: "leaf", Icon: Leaf },
-  { value: "palette", Icon: Palette }, { value: "bag", Icon: ShoppingBag },
+  { value: "shirt", Icon: Shirt }, { value: "shoes", Icon: Footprints }, { value: "watch", Icon: Watch },
+  { value: "glasses", Icon: Glasses }, { value: "gem", Icon: Gem }, { value: "book", Icon: BookOpen },
+  { value: "leaf", Icon: Leaf }, { value: "palette", Icon: Palette }, { value: "bag", Icon: ShoppingBag },
+  { value: "party", Icon: PartyPopper }, { value: "cake", Icon: Cake }, { value: "tree", Icon: TreePine },
+  { value: "music", Icon: Music }, { value: "games", Icon: Gamepad2 }, { value: "camera", Icon: Camera },
 ];
 export function ListIcon({ value, size = 16 }: { value: string; size?: number }) {
   const found = LIST_ICONS.find(i => i.value === value);
@@ -634,6 +638,7 @@ export default function App() {
   const [newListIcon, setNewListIcon] = useState("star");
   const [editingListId, setEditingListId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
+  const [editingIcon, setEditingIcon] = useState("star");
   const [showPhotoPicker, setShowPhotoPicker] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [sortBy, setSortBy] = useState<"default" | "priority" | "price-asc" | "price-desc">("default");
@@ -745,10 +750,11 @@ export default function App() {
   async function saveRename() {
     if (!editingName.trim() || !editingListId) { setEditingListId(null); return; }
     const id = editingListId;
+    const icon = editingIcon;
     setEditingListId(null);
     try {
-      const updated = await apiRenameList(id, editingName.trim());
-      setLists(ls => ls.map(l => l.id === id ? { ...l, name: updated.name } : l));
+      const updated = await apiRenameList(id, editingName.trim(), icon);
+      setLists(ls => ls.map(l => l.id === id ? { ...l, name: updated.name, icon: updated.icon } : l));
     } catch (err) {
       setActionError(err instanceof Error ? err.message : "Couldn't rename that list");
     }
@@ -852,28 +858,55 @@ export default function App() {
               <div className="flex items-center gap-1.5 mb-3 flex-wrap">
                 {lists.map(list => (
                   editingListId === list.id ? (
-                    <input
-                      key={list.id}
-                      value={editingName}
-                      onChange={e => setEditingName(e.target.value)}
-                      onKeyDown={e => { if (e.key === "Enter") saveRename(); if (e.key === "Escape") setEditingListId(null); }}
-                      onBlur={saveRename}
-                      className="rounded-2xl px-3 py-1.5 text-xs font-bold focus:outline-none"
-                      style={{ width: 120, background: "#fff", border: "2px solid #FF1493", color: "#12002A", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}
-                      autoFocus
-                    />
+                    <div key={list.id} className="relative">
+                      <div onClick={saveRename} className="fixed inset-0 z-30" />
+                      <input
+                        value={editingName}
+                        onChange={e => setEditingName(e.target.value)}
+                        onKeyDown={e => { if (e.key === "Enter") saveRename(); if (e.key === "Escape") setEditingListId(null); }}
+                        className="relative z-40 rounded-2xl px-3 py-1.5 text-xs font-bold focus:outline-none"
+                        style={{ width: 120, background: "#fff", border: "2px solid #FF1493", color: "#12002A", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}
+                        autoFocus
+                      />
+                      <div
+                        onClick={e => e.stopPropagation()}
+                        className="absolute top-full left-0 mt-2 z-40 p-2.5 rounded-2xl shadow-xl"
+                        style={{ width: 210, background: "#fff", border: "2px solid #FFD6F0" }}
+                      >
+                        <div className="grid grid-cols-6 gap-1 mb-2">
+                          {LIST_ICONS.map(({ value, Icon }) => (
+                            <button key={value} onClick={() => setEditingIcon(value)} className="aspect-square rounded-lg flex items-center justify-center transition-colors"
+                              style={{ background: editingIcon === value ? "#FF1493" : "#FFE8F5", color: editingIcon === value ? "#fff" : "#FF1493" }}>
+                              <Icon size={11} />
+                            </button>
+                          ))}
+                        </div>
+                        <div className="flex gap-1.5">
+                          <button onClick={saveRename} className="flex-1 rounded-lg py-1 text-xs font-bold" style={{ background: "#FF1493", color: "#fff", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>Save</button>
+                          <button onClick={() => setEditingListId(null)} className="flex-1 rounded-lg py-1 text-xs font-bold" style={{ border: "2px solid #FFD6F0", color: "#FF1493", background: "#fff", fontFamily: "'ZT Bros Oskon 90s', sans-serif" }}>Cancel</button>
+                        </div>
+                      </div>
+                    </div>
                   ) : (
                     <div
                       key={list.id}
                       onClick={() => { setActiveListId(list.id); setSelectedItemId(null); }}
+                      onDoubleClick={() => {
+                        setActiveListId(list.id);
+                        setSelectedItemId(null);
+                        setEditingListId(list.id);
+                        setEditingName(list.name);
+                        setEditingIcon(list.icon);
+                      }}
                       onContextMenu={e => {
                         e.preventDefault();
                         setActiveListId(list.id);
                         setSelectedItemId(null);
                         setEditingListId(list.id);
                         setEditingName(list.name);
+                        setEditingIcon(list.icon);
                       }}
-                      title="Two-finger click to rename"
+                      title="Double click (or two-finger click) to rename"
                       className="flex items-center gap-1.5 rounded-2xl pl-3 pr-1.5 py-1.5 text-xs font-bold transition-all cursor-pointer"
                       style={{
                         background: activeListId === list.id ? "#FF1493" : "#fff",
